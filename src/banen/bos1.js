@@ -168,9 +168,10 @@ TP.BANEN = TP.BANEN || {};
     naam: 'Kaalslag', wereld: 'bos',
     start: { x: 1100, y: 2600 },
     benen: [
-      { type: 'rechts', x: 0, y: 2600, stukken: [S.aanloop, S.schans, S.afdaling, S.stam] },          // 1800+3000+3200+2200 = 10200
-      { type: 'klim', x: 10200, y: 1100, stuk: klim },
-      { type: 'links', x: 12150, y: 1100, stukken: [S.finish, S.trap, S.rechte, S.stammen] },        // 2000+2600+2600+2600 = 9800, eindigt op x=2350
+      // links moet eindigen boven de afdaling (x = 350 + 2000): links = rechts - 400
+      { type: 'rechts', x: 0, y: 2600, stukken: [S.aanloop, S.schans, S.schacht, S.start, S.afdaling, S.ravijn] },   // 15800 breed
+      { type: 'klim', x: 15800, y: 1100, stuk: klim },
+      { type: 'links', x: 17750, y: 1100, stukken: [S.finish, S.trap, S.rechte, S.schans, S.stammen, S.tunnel] },   // 15400 breed, eindigt op x=2350
       { type: 'daal', x: 350, y: 1100, stuk: daal }
     ]
   };
@@ -179,9 +180,10 @@ TP.BANEN = TP.BANEN || {};
     naam: 'Vuurlinie', wereld: 'bos',
     start: { x: 1100, y: 2600 },   // open grond in de aanloop, vóór de omgevallen stam
     benen: [
-      { type: 'rechts', x: 0, y: 2600, stukken: [S.aanloop, S.stam, S.stammen, S.ravijn] },      // 9400 breed
-      { type: 'klim', x: 9400, y: 1100, stuk: klim },
-      { type: 'links', x: 11350, y: 1100, stukken: [S.rechte, S.vallei, S.tunnel] },           // 7800 breed, eindigt op x=3550
+      // links moet eindigen boven de afdaling (x = 1550 + 2000): links = rechts - 1600
+      { type: 'rechts', x: 0, y: 2600, stukken: [S.aanloop, S.stam, S.schans, S.stammen, S.afdaling, S.ravijn, S.schacht] },   // 18200 breed
+      { type: 'klim', x: 18200, y: 1100, stuk: klim },
+      { type: 'links', x: 20150, y: 1100, stukken: [S.rechte, S.vallei, S.trap, S.tunnel, S.start, S.finish, S.aanloop] },      // 16600 breed, eindigt op x=3550
       { type: 'daal', x: 1550, y: 1100, stuk: daal }
     ]
   };

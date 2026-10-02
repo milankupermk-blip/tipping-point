@@ -71,5 +71,7 @@ TP.NIVEAU = {
   inhalen: [[1600, 1.25], [900, 1.15], [400, 1.07]],
   botsVoorSpeler: [[1400, 0.82], [700, 0.9], [300, 0.96]],
   cameraNaarSpeler: 0.28,
+  // de camera volgt alleen wie nog meedoet: niet verder dan dit achter de koploper (langs het circuit) en niet langer vast dan vastTijd s
+  cameraAchterstand: 5000, vastTijd: 3,
   klapSpeler: 0.6
 };

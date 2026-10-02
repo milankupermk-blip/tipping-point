@@ -457,6 +457,7 @@ TP.Race = class extends Phaser.Scene {
       else { const voorOpSpeler = this.speler.dood ? 0 : r.vooruit - this.speler.vooruit; r.rubber = voorOpSpeler > 300 ? trap(TP.NIVEAU.botsVoorSpeler, voorOpSpeler) : achter > 900 ? 1.06 : 1; }
       r.vorigX = r.x; r.vorigY = r.y;
       r.stap(dt);
+      if (r.vooruitMerk === undefined || r.afstand > r.vooruitMerk + 40) { r.vooruitMerk = r.afstand; r.vooruitTijd = this.rondeTijd; }
       this.botsObjecten(r, dt);
       if (r.t.magneet > 0) {
         const a = this.baan.ankerVoor(r.x, r.handY(), r.richting, 900);
@@ -560,8 +561,10 @@ TP.Race = class extends Phaser.Scene {
   volgCamera(dt, start) {
     const cam = this.cameras.main, C = TP.CAMERA;
     const k = this.koploper();
-    const levend = this.renners.filter(r => !r.dood);
-    const xs = levend.map(r => r.x), ys = levend.map(r => r.y);
+    // alleen wie nog meedoet bepaalt het beeld (ook in de hoogte): wie vastzit of ver achterligt, raakt vanzelf uit beeld en is af
+    const N = TP.NIVEAU;
+    const meedoen = this.renners.filter(r => !r.dood && (r === k || (k.vooruit - r.vooruit < N.cameraAchterstand && this.rondeTijd - (r.vooruitTijd || 0) < N.vastTijd)));
+    const xs = meedoen.map(r => r.x), ys = meedoen.map(r => r.y);
     const bx1 = Math.min(...xs), bx2 = Math.max(...xs), by1 = Math.min(...ys), by2 = Math.max(...ys);
     // zoom: de meute in beeld, maar in de loop van de ronde steeds krapper
     // ronde eindigt altijd: het beeld wordt krapper, eerst rustig, na 45 s hard; sneller zodra de speler af is
@@ -579,7 +582,7 @@ TP.Race = class extends Phaser.Scene {
     let doelX = verticaal ? (k.x * 0.6 + (bx1 + bx2) / 2 * 0.4) : k.x - d * (TP.W / z) * 0.08;
     // ligt de speler achter, dan schuift het beeld een stuk zijn kant op (de koploper blijft in beeld)
     const sp = this.speler;
-    if (!verticaal && !sp.dood && sp !== k) {
+    if (!verticaal && meedoen.includes(sp) && sp !== k) {
       const terug = (doelX - sp.x) * d;
       if (terug > 0) doelX -= d * Math.min(terug * 0.5, (TP.W / z) * TP.NIVEAU.cameraNaarSpeler);
     }
@@ -596,8 +599,11 @@ TP.Race = class extends Phaser.Scene {
     const cam = this.cameras.main;
     const rand = this.beeldRand();
     const m = TP.CAMERA.frontMarge / cam.zoom;
+    const k = this.koploper();
     for (const r of this.renners) {
       if (r.dood) continue;
+      // gelapt: de koploper is je (bijna) een heel rondje voor
+      if (r !== k && k.vooruit - r.vooruit > this.baan.lengte - 200) { this.uitschakelen(r, 'gelapt'); continue; }
       const hb = r.breedte / 2;
       // opzij uit beeld = gepakt door het front; boven of onder uit beeld krijgt wat extra ruimte (hoge en lage routes)
       if (r.x + hb < rand.links + m || r.x - hb > rand.rechts - m || r.y - r.hoogte > rand.onder + 60 || r.y < rand.boven - 60) this.uitschakelen(r);
@@ -606,8 +612,9 @@ TP.Race = class extends Phaser.Scene {
     // de ronde loopt door tot er één over is, ook als jij al af bent (je kijkt dan mee met de koploper)
     if (this.fase === 'race' && levend.length <= 1) {
       this.fase = 'uitloop';
-      const winnaar = levend[0];
-      this.stand.punten[winnaar ? winnaar.id : 0]++;
+      // vallen de laatste twee in hetzelfde moment af, dan wint wie het verst was
+      const winnaar = levend[0] || k;
+      this.stand.punten[winnaar.id]++;
       if (winnaar === this.speler) {
         const sleutel = 'tp_record_' + this.opties.baan, oud = TP.lees(sleutel, null);
         if (this.rondeTijd > 10 && (oud === null || oud < 10 || this.rondeTijd < oud)) { TP.bewaar(sleutel, this.rondeTijd); this.toonTussentijd('Nieuw record: ' + this.rondeTijd.toFixed(2)); }
@@ -625,7 +632,7 @@ TP.Race = class extends Phaser.Scene {
     this.frontX = frontX;
   }
 
-  uitschakelen(r) {
+  uitschakelen(r, reden) {
     r.dood = true;
     if (r.kijk && r.kijk.sprite) {
       const s = r.kijk.sprite;
@@ -634,8 +641,8 @@ TP.Race = class extends Phaser.Scene {
     }
     this.fx.rook && this.fx.rook.emitParticleAt(r.x, r.y - 60, 10);
     this.geluid.speel(r.isSpeler ? 'dood' : 'uit');
-    if (r.isSpeler) { this.cameras.main.shake(400, 0.014); this.cameras.main.flash(300, 255, 120, 30); this.toonMelding('Gepakt door het vuur!', 2.0, 92); this.gloed.setAlpha(0.6); }
-    else this.toonTussentijd(r.naam + ' is gepakt');
+    if (r.isSpeler) { this.cameras.main.shake(400, 0.014); this.cameras.main.flash(300, 255, 120, 30); this.toonMelding(reden === 'gelapt' ? 'Gelapt! Je bent af' : 'Gepakt door het vuur!', 2.0, 92); this.gloed.setAlpha(0.6); }
+    else this.toonTussentijd(r.naam + (reden === 'gelapt' ? ' is gelapt' : ' is gepakt'));
   }
 
   // ---------------------------------------------------------------- tekenen
