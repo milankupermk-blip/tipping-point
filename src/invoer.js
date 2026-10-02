@@ -4,7 +4,8 @@ window.TP = window.TP || {};
 
 TP.LegeInvoer = () => ({ x: 0, spring: false, springVast: false, slide: false, haak: false, item: false, schiet: false, kracht: false });
 
-// Toetsenbord: pijltjes of WASD, spatie springen, shift/S slide, haak = C of K, item = X of J, schiet = V of L, kracht = Z of H.
+// Toetsenbord: pijltjes links/rechts lopen, pijltje omhoog springen, pijltje omlaag bukken (slide).
+// Ook WASD en spatie/shift. Haak = C of K, item = X of J, schiet = V of L, kracht = Z of H.
 TP.Toetsenbord = class {
   constructor(scene) {
     this.k = scene.input.keyboard.addKeys({

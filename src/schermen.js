@@ -112,8 +112,8 @@ TP.Menu = class extends Phaser.Scene {
       this.add.text(x, 735, r && r > 10 ? 'Beste ronde: ' + r.toFixed(2) + ' s' : 'Nog geen record', knopStijl(24, '#ffd23f')).setOrigin(0.5).setDepth(5);
     });
     const hulp = [
-      'Pijltjes of A/D  rennen        Spatie  springen (2x = dubbel, tegen een muur = wall-jump)',
-      'Shift of S  sliden        C  grijphaak (pakt plafonds en lianen)        X  item        V  schieten        Z  dash        R  opnieuw'
+      '← →  rennen        ↑  springen (2x = dubbel, tegen een muur = wall-jump)        ↓  bukken / sliden',
+      'C  grijphaak (pakt plafonds en lianen)        X  item        V  schieten        Z  dash        R  opnieuw'
     ];
     this.add.text(W / 2, H - 150, hulp.join('\n'), { ...knopStijl(26), lineSpacing: 12 }).setOrigin(0.5).setDepth(5);
     this.add.text(W / 2, H - 50, 'Je speelt als vos tegen uil, bever en ijsbeer. Eerste met drie ronden wint.   M = muziek aan/uit', knopStijl(24, '#d9c9a8')).setOrigin(0.5).setDepth(5);

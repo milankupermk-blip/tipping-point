@@ -148,6 +148,8 @@ TP.Renner = class {
     // sturen
     if (ix !== 0 && T.verdoofd <= 0 && T.dash <= 0) {
       if (Math.abs(this.vx) < top || Math.sign(this.vx) !== ix) this.vx += ix * F.luchtSturing * dt;
+    } else if (ix === 0 && T.dash <= 0 && T.muurLock <= 0) {
+      this.vx = TP.naar(this.vx, 0, F.luchtRem * dt);
     }
     // zwaartekracht
     const licht = inp.springVast && this.vy < 0 && T.vast > 0;
@@ -299,7 +301,7 @@ TP.Renner = class {
     if (this.schild) { this.schild = false; T.verdoofd = 0.15; this.meld('schildBreekt'); return false; }
     const z = zwaarte || 'normaal';
     T.verdoofd = z === 'licht' ? 0.22 : z === 'zwaar' ? F.verdoving : 0.4;
-    this.vx *= z === 'licht' ? 0.5 : F.klapSnelheid;
+    this.vx *= z === 'licht' ? (this.isSpeler ? 0.75 : 0.5) : (this.isSpeler ? TP.NIVEAU.klapSpeler : F.klapSnelheid);
     if (this.opGrond && z !== 'licht') { this.vy = -320; this.opGrond = false; }
     this.haak = null; this.slidet = false;
     this.meld('klap', bron);

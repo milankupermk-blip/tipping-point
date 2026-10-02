@@ -105,7 +105,7 @@ TP.Race = class extends Phaser.Scene {
     this.renners = [];
     const st = this.baanDef.start;
     const rollen = ['vos', 'uil', 'bever', 'ijsbeer'];
-    const vaardigheden = [0.9, 0.78, 0.68];
+    const vaardigheden = TP.NIVEAU.bots;
     this.speler = new TP.Renner(this, { id: 0, rol: 'vos', naam: 'Jij', speler: true, invoer: new TP.Toetsenbord(this), x: st.x, y: st.y, item: this.opties.item || null });
     this.renners.push(this.speler);
     for (let i = 0; i < TP.WEDSTRIJD.bots; i++) {
@@ -237,7 +237,7 @@ TP.Race = class extends Phaser.Scene {
     if (this.tipsGezien < 3) {
       this.tipPaneel = paneel(W / 2, 150, 760, 90, true);
       this.tipTekst = voeg(this.add.text(W / 2, 150, '', stijl(28)).setOrigin(0.5));
-      this.tips = ['Pijltjes of A/D rennen, spatie springen, 2x spatie = dubbele sprong', 'Houd C vast bij een plafond of liaan: grijphaak. Loslaten geeft vaart.', 'Shift: slide onder lage takken. Bergaf is sliden het snelst.', 'Spring tegen een muur en spring opnieuw: wall-jump.', 'Wie opzij uit beeld raakt, is gepakt. Blijf bij de koploper.', 'Z: dash. X: item uit een krat gebruiken.'];
+      this.tips = ['Pijltjes links en rechts: rennen. Pijltje omhoog: springen, 2x = dubbele sprong', 'Pijltje omlaag: bukken en sliden onder lage takken. Bergaf is sliden het snelst.', 'Houd C vast bij een plafond of liaan: grijphaak. Loslaten geeft vaart.', 'Spring tegen een muur en spring opnieuw: wall-jump.', 'Wie opzij uit beeld raakt, is gepakt. Blijf bij de koploper.', 'Z: dash. X: item uit een krat gebruiken.'];
       this.tipIndex = -1; this.tipTimer = 0;
       TP.bewaar('tp_tips', this.tipsGezien + 1);
     }
@@ -431,8 +431,12 @@ TP.Race = class extends Phaser.Scene {
     const koploper = this.koploper();
     for (const r of this.renners) {
       if (r.dood) continue;
-      // rubberband: bots achter de koploper lopen harder, bots ver vóór de speler iets zachter (de race blijft spannend)
-      if (!r.isSpeler) { const d = koploper.vooruit - r.vooruit; const voorOpSpeler = r.vooruit - this.speler.vooruit; r.rubber = d > 1600 ? 1.14 : d > 900 ? 1.08 : d > 400 ? 1.03 : (voorOpSpeler > 1400 ? 0.9 : voorOpSpeler > 700 ? 0.95 : 1); }
+      // rubberband: de speler haalt in als die achterligt; bots ver vóór de speler lopen zachter, bots achteraan iets harder
+      const trap = (lijst, v) => { for (const [grens, f] of lijst) if (v > grens) return f; return 1; };
+      const achter = koploper.vooruit - r.vooruit;
+      if (r.isSpeler) r.rubber = trap(TP.NIVEAU.inhalen, achter);
+      else { const voorOpSpeler = this.speler.dood ? 0 : r.vooruit - this.speler.vooruit; r.rubber = voorOpSpeler > 300 ? trap(TP.NIVEAU.botsVoorSpeler, voorOpSpeler) : achter > 900 ? 1.06 : 1; }
+      r.vorigX = r.x; r.vorigY = r.y;
       r.stap(dt);
       this.botsObjecten(r, dt);
       if (r.t.magneet > 0) {
@@ -553,7 +557,13 @@ TP.Race = class extends Phaser.Scene {
     const d = this.baan.richtingOp(k.x, k.y, k);
     const been = k.been || this.baan.beenOp(k.x, k.y);
     const verticaal = been && (been.type === 'klim' || been.type === 'daal');
-    const doelX = verticaal ? (k.x * 0.6 + (bx1 + bx2) / 2 * 0.4) : k.x - d * (TP.W / z) * 0.08;
+    let doelX = verticaal ? (k.x * 0.6 + (bx1 + bx2) / 2 * 0.4) : k.x - d * (TP.W / z) * 0.08;
+    // ligt de speler achter, dan schuift het beeld een stuk zijn kant op (de koploper blijft in beeld)
+    const sp = this.speler;
+    if (!verticaal && !sp.dood && sp !== k) {
+      const terug = (doelX - sp.x) * d;
+      if (terug > 0) doelX -= d * Math.min(terug * 0.5, (TP.W / z) * TP.NIVEAU.cameraNaarSpeler);
+    }
     // verticaal: tussen de hoogste en laagste renner in, met een lichte voorkeur voor de koploper
     const doelY = (by1 + by2) / 2 * 0.55 + k.y * 0.45 - 120;
     const cx = Phaser.Math.Linear(cam.midPoint.x, doelX, start ? 1 : 1 - Math.exp(-C.volgX * dt));
@@ -691,7 +701,11 @@ TP.Race = class extends Phaser.Scene {
     const k = r.kijk;
     if (!k || !k.sprite) return;
     const s = k.sprite, p = k.rol;
-    s.setPosition(r.x, r.y + 4);
+    // tekenen tussen de laatste twee fysicastappen in, zodat de beweging vloeiend is op elk scherm (60, 75, 144 Hz)
+    const f = Phaser.Math.Clamp(this.acc / TP.STAP, 0, 1);
+    const x = r.vorigX === undefined ? r.x : r.vorigX + (r.x - r.vorigX) * f;
+    const y = r.vorigY === undefined ? r.y : r.vorigY + (r.y - r.vorigY) * f;
+    s.setPosition(x, y + 4);
     s.setFlipX(r.richting < 0);
     let pose = null, anim = null;
     if (r.dood) return;
@@ -720,10 +734,10 @@ TP.Race = class extends Phaser.Scene {
     s.setRotation(r.opGrond ? r.hoek * 0.6 : (r.haak ? Phaser.Math.Clamp(r.vx / 2500, -0.5, 0.5) : 0));
     const basisTint = k.tint || 0xffffff;
     if (r.t.verdoofd > 0) s.setTint(Math.floor(this.tijd * 20) % 2 ? 0xff9977 : basisTint); else if (r.t.bevroren > 0) s.setTint(0x9fd8ff); else if (r.t.traag > 0 || r.t.grip > 0) s.setTint(0xffe27a); else if (r.t.boost > 0 || r.t.dash > 0) s.setTint(0xfff0c0); else s.setTint(basisTint);
-    if (k.schaduw) { const g = this.baan.grondOnder(r.x, r.y, 0, 600, false); k.schaduw.setPosition(r.x, g ? g.y : r.y).setVisible(!!g).setScale(1 - Math.min(0.5, (g ? g.y - r.y : 0) / 1000), 1); }
-    if (k.naam) k.naam.setPosition(r.x, r.y - r.hoogte - 30);
-    if (k.pijl) { k.pijl.setPosition(r.x, r.y - r.hoogte - 100 + Math.sin(this.tijd * 6) * 8); k.pijl.setVisible(!r.dood); }
-    if (k.gloed) { const g = this.baan.grondOnder(r.x, r.y, 0, 600, false); k.gloed.setPosition(r.x, g ? g.y : r.y).setVisible(!r.dood && !!g).setAlpha(0.25 + Math.sin(this.tijd * 5) * 0.1); }
+    if (k.schaduw) { const g = this.baan.grondOnder(x, y, 0, 600, false); k.schaduw.setPosition(x, g ? g.y : y).setVisible(!!g).setScale(1 - Math.min(0.5, (g ? g.y - y : 0) / 1000), 1); }
+    if (k.naam) k.naam.setPosition(x, y - r.hoogte - 30);
+    if (k.pijl) { k.pijl.setPosition(x, y - r.hoogte - 100 + Math.sin(this.tijd * 6) * 8); k.pijl.setVisible(!r.dood); }
+    if (k.gloed) { const g = this.baan.grondOnder(x, y, 0, 600, false); k.gloed.setPosition(x, g ? g.y : y).setVisible(!r.dood && !!g).setAlpha(0.25 + Math.sin(this.tijd * 5) * 0.1); }
     if (r.slidet && r.opGrond && this.fx.slideStof && Math.random() < 0.6) this.fx.slideStof.emitParticleAt(r.x - r.richting * 20, r.y, 1);
     if ((r.t.boost > 0 || r.t.dash > 0 || Math.abs(r.vx) > 1250) && this.fx.strepen && Math.random() < 0.7) this.fx.strepen.emitParticleAt(r.x - r.richting * 40, r.y - 60 - Math.random() * 60, 1);
     if (r.opGrond && Math.abs(r.vx) > 300 && this.fx.stof && Math.random() < 0.12) this.fx.stof.emitParticleAt(r.x - r.richting * 30, r.y, 1);

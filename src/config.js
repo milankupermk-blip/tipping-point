@@ -8,10 +8,10 @@ TP.FONT = "'Lilita One', 'Trebuchet MS', sans-serif";
 TP.FONT_TITEL = "'Titan One', 'Trebuchet MS', sans-serif";
 
 TP.FYS = {
-  // lopen: snel op snelheid, hoge top, scherp keren (SpeedRunners-tempo)
-  versnelling: 3400, keren: 7000, topsnelheid: 1100, rem: 2200,
-  // lucht: strakke boog, veel controle
-  zwaartekracht: 3600, zwaartekrachtVast: 1800, valMax: 2200, luchtSturing: 2400,
+  // lopen: snel op snelheid, scherp keren en stoppen zodra je loslaat
+  versnelling: 4200, keren: 8000, topsnelheid: 1000, rem: 4200,
+  // lucht: strakke boog, veel controle; loslaten in de lucht remt af (anders drijf je door)
+  zwaartekracht: 3600, zwaartekrachtVast: 1800, valMax: 2200, luchtSturing: 3000, luchtRem: 1400,
   // springen
   sprong: 1300, dubbeleSprong: 1150, vastTijd: 0.18, coyote: 0.1, buffer: 0.14,
   // muur
@@ -63,3 +63,13 @@ TP.WERELDEN = {
 };
 
 TP.WEDSTRIJD = { rondesNodig: 3, bots: 3 };
+
+// Moeilijkheid. Bots: vaardigheid 0.6 .. 0.95. Inhalen: snelheidsbonus voor de speler als die achter de koploper ligt.
+// Camera: hoeveel het beeld naar de speler meeschuift als die achterligt (deel van de beeldbreedte).
+TP.NIVEAU = {
+  bots: [0.74, 0.66, 0.6],
+  inhalen: [[1600, 1.25], [900, 1.15], [400, 1.07]],
+  botsVoorSpeler: [[1400, 0.82], [700, 0.9], [300, 0.96]],
+  cameraNaarSpeler: 0.28,
+  klapSpeler: 0.6
+};
