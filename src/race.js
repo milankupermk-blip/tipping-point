@@ -229,7 +229,7 @@ TP.Race = class extends Phaser.Scene {
     this.hudSnelheid = voeg(this.add.text(W - 40, 30, '', stijl(26)).setOrigin(1, 0));
     this.hudRonde = voeg(this.add.text(W / 2, 30, '', stijl(24, '#ffd23f')).setOrigin(0.5, 0));
 
-    this.hudMelding = voeg(this.add.text(W / 2, H * 0.36, '', { fontFamily: TP.FONT_TITEL, fontSize: '110px', color: '#fff4dc', stroke: '#2a1a0c', strokeThickness: 14 }).setOrigin(0.5).setAlpha(0));
+    this.hudMelding = voeg(this.add.text(W / 2, H * 0.36, '', { fontFamily: TP.FONT_TITEL, fontSize: '150px', color: '#fff4dc', stroke: '#2a1a0c', strokeThickness: 14 }).setOrigin(0.5).setAlpha(0));
     this.hudTussen = voeg(this.add.text(W / 2, H * 0.5, '', stijl(34, '#9bff6a')).setOrigin(0.5).setAlpha(0));
 
     // tips voor de eerste races
@@ -246,10 +246,11 @@ TP.Race = class extends Phaser.Scene {
   }
 
   toonMelding(tekst, duur, grootte) {
-    this.hudMelding.setText(tekst).setAlpha(1).setScale(1.25).setFontSize(grootte || 110);
+    const b = (grootte || 110) / 150;
+    this.hudMelding.setText(tekst).setAlpha(1).setScale(1.25 * b);
     this.hudTussen.setAlpha(0);
     this.tweens.killTweensOf(this.hudMelding);
-    this.tweens.add({ targets: this.hudMelding, scale: 1, duration: 180, ease: 'Back.Out' });
+    this.tweens.add({ targets: this.hudMelding, scale: b, duration: 180, ease: 'Back.Out' });
     this.tweens.add({ targets: this.hudMelding, alpha: 0, delay: duur * 1000, duration: 300 });
   }
 
@@ -274,6 +275,33 @@ TP.Race = class extends Phaser.Scene {
     for (const o of this.baan.objecten) this.maakObjectBeeld(o);
   }
 
+  // Tegelt textuur k over een rechthoek van b x h wereldpixels. (px, py) is het draaipunt, (ox, oy) de linkerbovenhoek
+  // ten opzichte daarvan vóór het draaien. patroonX/Y: waar in de rechthoek het patroon begint (voor een wereldvast patroon).
+  // Losse beelden in plaats van een tileSprite: een tileSprite maakt per stuk een eigen canvas en textuur aan, wat bij
+  // elke rondestart seconden kost en veel videogeheugen. Losse beelden delen één textuur.
+  tegelVlak(k, px, py, ox, oy, b, h, schaal, o = {}) {
+    const info = TP.manifest.beelden[k];
+    const tw = info.w * schaal, th = info.h * schaal;
+    const cos = Math.cos(o.hoek || 0), sin = Math.sin(o.hoek || 0);
+    const beelden = [];
+    const u0 = -(((o.patroonX || 0) % tw) + tw) % tw, v0 = -(((o.patroonY || 0) % th) + th) % th;
+    for (let v = v0; v < h - 0.01; v += th) {
+      for (let u = u0; u < b - 0.01; u += tw) {
+        const lx = ox + u, ly = oy + v;
+        const img = this.add.image(px + cos * lx - sin * ly, py + sin * lx + cos * ly, k).setOrigin(0, 0).setScale(schaal);
+        if (o.hoek) img.setRotation(o.hoek);
+        if (o.flipX) img.setFlipX(true);
+        if (o.tint !== undefined) img.setTint(o.tint);
+        const cx = Math.max(0, -u), cy = Math.max(0, -v);
+        const cw = Math.min(tw, b - u) - cx, ch = Math.min(th, h - v) - cy;
+        if (cx > 0 || cy > 0 || cw < tw - 0.01 || ch < th - 0.01) img.setCrop(cx / schaal, cy / schaal, cw / schaal, ch / schaal);
+        this.laagBaan.add(img);
+        beelden.push(img);
+      }
+    }
+    return beelden;
+  }
+
   tekenGrond(s) {
     const lengte = Math.hypot(s.x2 - s.x1, s.y2 - s.y1);
     const k = s.oneWay ? 'tegel_platform' : 'tegel_grond';
@@ -281,9 +309,7 @@ TP.Race = class extends Phaser.Scene {
     const info = TP.manifest.beelden[k];
     const hoog = s.oneWay ? 70 : 120;
     const schaal = hoog / info.h;
-    const ts = this.add.tileSprite(s.x1, s.y1, lengte / schaal, info.h, k).setOrigin(0, 0.18).setScale(schaal).setRotation(s.hoek);
-    this.laagBaan.add(ts);
-    s.sprite = ts;
+    s.beelden = this.tegelVlak(k, s.x1, s.y1, 0, -0.18 * hoog, lengte, hoog, schaal, { hoek: s.hoek });
     if (s.oneWay) {
       // uiteinden van een zwevend platform
       for (const [kant, x, flip] of [['tegel_platform_links', s.x1, false], ['tegel_platform_rechts', s.x2, true]]) {
@@ -298,17 +324,15 @@ TP.Race = class extends Phaser.Scene {
     if (TP.heeft('tegel_vulling')) {
       const vi = TP.manifest.beelden['tegel_vulling'];
       const vs = 256 / vi.h;
-      const stap = 128;
+      const stap = s.y1 === s.y2 ? Infinity : 128;   // vlak: één stuk; helling: smalle kolommen die de helling volgen
       // onderste niveau krijgt diepe grond; hogere niveaus zijn een dikke plaat zodat je eronderdoor kunt kijken
       const laagste = Math.max(s.y1, s.y2) > this.wereldOnder - 900;
       const bodem = Math.min(this.wereldOnder - 300, Math.max(s.y1, s.y2) + (laagste ? 380 : 200));
       for (let x = s.x1; x < s.x2; x += stap) {
         const b = Math.min(stap, s.x2 - x);
         const y = TP.Baan.hoogteOp(s, Math.min(x + b / 2, s.x2)) + hoog * 0.6;
-        const kolom = this.add.tileSprite(x, y, b / vs, Math.max(1, (bodem - y) / vs), 'tegel_vulling').setOrigin(0, 0).setScale(vs);
-        kolom.tilePositionX = x / vs; kolom.tilePositionY = y / vs;
-        kolom.setTint(0x8a7a66);   // vulling donkerder dan de loopstrook, zodat platforms en randen opvallen
-        this.laagBaan.add(kolom);
+        // vulling donkerder dan de loopstrook, zodat platforms en randen opvallen
+        this.tegelVlak('tegel_vulling', x, y, 0, 0, b, Math.max(1, bodem - y), vs, { patroonX: x, patroonY: y, tint: 0x8a7a66 });
       }
     }
   }
@@ -317,27 +341,22 @@ TP.Race = class extends Phaser.Scene {
     if (!TP.heeft('tegel_vulling')) return;
     const vi = TP.manifest.beelden['tegel_vulling'];
     const vs = 256 / vi.h;
-    b.sprite = this.add.tileSprite(b.x, b.y, b.w / vs, b.h / vs, 'tegel_vulling').setOrigin(0).setScale(vs);
-    b.sprite.tilePositionX = b.x / vs; b.sprite.tilePositionY = b.y / vs; b.sprite.setTint(0x9a8a74);
-    this.laagBaan.add(b.sprite);
+    b.beelden = this.tegelVlak('tegel_vulling', b.x, b.y, 0, 0, b.w, b.h, vs, { patroonX: b.x, patroonY: b.y, tint: 0x9a8a74 });
     if (TP.heeft('tegel_muur')) {
       const mi = TP.manifest.beelden['tegel_muur'];
       const ms = 110 / mi.w;
-      const l = this.add.tileSprite(b.x, b.y, mi.w, b.h / ms, 'tegel_muur').setOrigin(0, 0).setScale(ms);
-      const r = this.add.tileSprite(b.x + b.w, b.y, mi.w, b.h / ms, 'tegel_muur').setOrigin(1, 0).setScale(ms).setFlipX(true);
-      this.laagBaan.add(l); this.laagBaan.add(r);
+      this.tegelVlak('tegel_muur', b.x, b.y, 0, 0, mi.w * ms, b.h, ms);
+      this.tegelVlak('tegel_muur', b.x + b.w, b.y, -mi.w * ms, 0, mi.w * ms, b.h, ms, { flipX: true });
     }
     if (TP.heeft('tegel_plafond') && b.h > 200) {
       const pi = TP.manifest.beelden['tegel_plafond'];
       const ps = 90 / pi.h;
-      const p = this.add.tileSprite(b.x, b.y + b.h, b.w / ps, pi.h, 'tegel_plafond').setOrigin(0, 0.75).setScale(ps);
-      this.laagBaan.add(p);
+      this.tegelVlak('tegel_plafond', b.x, b.y + b.h, 0, -0.75 * pi.h * ps, b.w, pi.h * ps, ps);
     }
     if (TP.heeft('tegel_grond')) {
       const gi = TP.manifest.beelden['tegel_grond'];
       const gs = 120 / gi.h;
-      const top = this.add.tileSprite(b.x, b.y, b.w / gs, gi.h, 'tegel_grond').setOrigin(0, 0.18).setScale(gs);
-      this.laagBaan.add(top);
+      this.tegelVlak('tegel_grond', b.x, b.y, 0, -0.18 * gi.h * gs, b.w, gi.h * gs, gs);
     }
   }
 
@@ -666,13 +685,16 @@ TP.Race = class extends Phaser.Scene {
     this.hudStand.setText(this.stand.namen.map((n, i) => n + ' ' + '●'.repeat(this.stand.punten[i]) + '○'.repeat(TP.WEDSTRIJD.rondesNodig - this.stand.punten[i])).join('   '));
     if (sp.item && TP.heeft('item_' + sp.item)) { const i = TP.manifest.beelden['item_' + sp.item]; this.itemPop = Math.max(0, (this.itemPop || 0) - dt); const pop = 1 + Math.sin(Math.min(1, this.itemPop / 0.5) * Math.PI) * 0.6; this.hudItemBeeld.setTexture('item_' + sp.item).setScale(76 / Math.max(i.w, i.h) * pop).setVisible(true); } else this.hudItemBeeld.setVisible(false);
     this.hudItemTekst.setText(sp.item ? TP.ITEMS[sp.item].naam : (sp.schild ? 'Bladschild' : 'geen item'));
-    this.hudItemHint.setText(sp.item ? 'X  gebruiken' : 'X  item').setColor(sp.item && Math.floor(this.tijd * 3) % 2 ? '#ffd23f' : '#d9c9a8');
+    this.hudItemHint.setText(sp.item ? 'X  gebruiken' : 'X  item');
+    const hintKleur = sp.item && Math.floor(this.tijd * 3) % 2 ? '#ffd23f' : '#d9c9a8';
+    if (this.hudItemHint.style.color !== hintKleur) this.hudItemHint.setColor(hintKleur);
     const af = sp.t.dashAfkoel / TP.FYS.dashAfkoel;
     this.hudDashSchaduw.clear();
     if (af > 0) { this.hudDashSchaduw.fillStyle(0x000000, 0.55).slice(TP.W / 2 - 120, TP.H - 80, 46, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * af, false).fillPath(); }
-    this.hudDashTekst.setText(af > 0 ? Math.ceil(sp.t.dashAfkoel) : 'DASH');
+    this.hudDashTekst.setText(af > 0 ? String(Math.ceil(sp.t.dashAfkoel)) : 'DASH');
     this.hudDashSub.setText(af > 0 ? 'Z  laden' : 'Z  klaar');
-    this.hudSnelheid.setText(Math.round(Math.abs(sp.vx) / 10) + ' km/u');
+    this.hudSnelheidKlok = (this.hudSnelheidKlok || 0) - dt;
+    if (this.hudSnelheidKlok <= 0) { this.hudSnelheidKlok = 0.12; this.hudSnelheid.setText(Math.round(Math.abs(sp.vx) / 10) + ' km/u'); }
     if (this.tips) {
       this.tipTimer -= dt;
       if (this.tipTimer <= 0) { this.tipIndex++; if (this.tipIndex >= this.tips.length) { this.tips = null; this.tipPaneel.setVisible(false); this.tipTekst.setVisible(false); } else { this.tipTekst.setText(this.tips[this.tipIndex]); this.tipTimer = 5.5; } }

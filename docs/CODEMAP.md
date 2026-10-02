@@ -6,6 +6,7 @@ Snelle instap voor een volgende chat. Lees eerst `PLAN.md` (ontwerp en afstemmin
 
 - Preview: configuratie `tipping-point` in `.claude/launch.json` (poort 5180), of `python -m http.server 5180` in de projectmap.
 - Na nieuw artwork: `python tools/assets.py` (maakt `assets/manifest.json` en de bewerkte sprites in `assets/spel`).
+  Daarna `python tools/verklein.py`: verkleint de sprites tot het formaat waarin ze in beeld komen (scheelt videogeheugen en laadtijd) en werkt het manifest bij.
 - Debugweergave in de race: F3. Esc terug naar het menu.
 
 ## Bestanden
@@ -23,6 +24,7 @@ Snelle instap voor een volgende chat. Lees eerst `PLAN.md` (ontwerp en afstemmin
 - `src/schermen.js` — `TP.Boot`, `TP.Menu`, `TP.Vraag`, `TP.Ronde`, `TP.Einde` plus hulpfuncties `TP.knop`, `TP.paneel`, `TP.achtergrond`.
 - `src/vragen.js` — `VRAGEN` en `FEITEN` voor het leerdeel.
 - `src/main.js` — Phaser-config en scenelijst.
+- `tools/verklein.py` — verkleint personages, vijanden, obstakels, items en baantegels in `assets/spel` en zet de nieuwe maten in het manifest. Herhaalbaar. De code schaalt alles op basis van het manifest, dus in beeld verandert niets.
 - `tools/assets.py` — scant `assets/gpt/*` en Downloads, pakt batch-zips uit, snijdt randen weg, bouwt spritesheets (`*_ren`, `fx_*`), maakt parallaxlagen herhaalbaar (gespiegeld), schrijft `assets/manifest.json`.
 
 ## Hoe de race-lus werkt

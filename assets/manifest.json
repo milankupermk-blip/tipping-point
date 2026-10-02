@@ -1,11 +1,11 @@
 {
  "beelden": {
   "bos_boostplaat": {
-   "w": 941,
-   "h": 250,
+   "w": 320,
+   "h": 85,
    "bron": "gpt/batch2/bos_boostplaat.png",
    "pad": "spel/bos_boostplaat.png",
-   "v": 1790851390
+   "v": 1790950730
   },
   "bos_dichtbij": {
    "w": 2704,
@@ -15,11 +15,11 @@
    "v": 1790894542
   },
   "bos_krat": {
-   "w": 805,
-   "h": 749,
+   "w": 320,
+   "h": 298,
    "bron": "gpt/batch2/bos_krat.png",
    "pad": "spel/bos_krat.png",
-   "v": 1790851395
+   "v": 1790950730
   },
   "bos_lucht": {
    "w": 2704,
@@ -36,46 +36,46 @@
    "v": 1790894552
   },
   "bos_obstakel_1": {
-   "w": 989,
-   "h": 505,
+   "w": 320,
+   "h": 163,
    "bron": "gpt/batch2/bos_obstakel_1.png",
    "pad": "spel/bos_obstakel_1.png",
-   "v": 1790851410
+   "v": 1790950730
   },
   "bos_obstakel_2": {
-   "w": 950,
-   "h": 876,
+   "w": 320,
+   "h": 295,
    "bron": "gpt/batch2/bos_obstakel_2.png",
    "pad": "spel/bos_obstakel_2.png",
-   "v": 1790851411
+   "v": 1790950730
   },
   "bos_obstakel_3": {
-   "w": 947,
-   "h": 945,
+   "w": 320,
+   "h": 319,
    "bron": "gpt/batch2/bos_obstakel_3.png",
    "pad": "spel/bos_obstakel_3.png",
-   "v": 1790851412
+   "v": 1790950730
   },
   "bos_obstakel_4": {
-   "w": 758,
-   "h": 981,
+   "w": 247,
+   "h": 320,
    "bron": "gpt/batch2/bos_obstakel_4.png",
    "pad": "spel/bos_obstakel_4.png",
-   "v": 1790851412
+   "v": 1790950730
   },
   "bos_obstakel_5": {
-   "w": 632,
-   "h": 979,
+   "w": 207,
+   "h": 320,
    "bron": "gpt/batch2/bos_obstakel_5.png",
    "pad": "spel/bos_obstakel_5.png",
-   "v": 1790851413
+   "v": 1790950730
   },
   "bos_obstakel_6": {
-   "w": 981,
-   "h": 673,
+   "w": 320,
+   "h": 220,
    "bron": "gpt/batch2/bos_obstakel_6.png",
    "pad": "spel/bos_obstakel_6.png",
-   "v": 1790851413
+   "v": 1790950730
   },
   "bos_tegels": {
    "w": 1468,
@@ -178,74 +178,74 @@
    "v": 1790894562
   },
   "item_eikel": {
-   "w": 855,
-   "h": 905,
+   "w": 242,
+   "h": 256,
    "bron": "gpt/batch3/item_eikel.png",
    "pad": "spel/item_eikel.png",
-   "v": 1790874736
+   "v": 1790950730
   },
   "item_grijphaak": {
-   "w": 972,
-   "h": 945,
+   "w": 256,
+   "h": 249,
    "bron": "gpt/batch3/item_grijphaak.png",
    "pad": "spel/item_grijphaak.png",
-   "v": 1790874737
+   "v": 1790950730
   },
   "item_krat": {
-   "w": 934,
-   "h": 915,
+   "w": 256,
+   "h": 251,
    "bron": "gpt/batch3/item_krat.png",
    "pad": "spel/item_krat.png",
-   "v": 1790874738
+   "v": 1790950730
   },
   "item_magneet": {
-   "w": 853,
-   "h": 926,
+   "w": 236,
+   "h": 256,
    "bron": "gpt/batch3/item_magneet.png",
    "pad": "spel/item_magneet.png",
-   "v": 1790874739
+   "v": 1790950730
   },
   "item_olie": {
-   "w": 977,
-   "h": 396,
+   "w": 256,
+   "h": 104,
    "bron": "gpt/batch3/item_olie.png",
    "pad": "spel/item_olie.png",
-   "v": 1790874740
+   "v": 1790950730
   },
   "item_peper": {
-   "w": 935,
-   "h": 935,
+   "w": 256,
+   "h": 256,
    "bron": "gpt/batch3/item_peper.png",
    "pad": "spel/item_peper.png",
-   "v": 1790874741
+   "v": 1790950730
   },
   "item_raket": {
-   "w": 969,
-   "h": 521,
+   "w": 256,
+   "h": 138,
    "bron": "gpt/batch3/item_raket.png",
    "pad": "spel/item_raket.png",
-   "v": 1790874741
+   "v": 1790950730
   },
   "item_schild": {
-   "w": 890,
-   "h": 864,
+   "w": 256,
+   "h": 249,
    "bron": "gpt/batch3/item_schild.png",
    "pad": "spel/item_schild.png",
-   "v": 1790874742
+   "v": 1790950730
   },
   "item_sneeuwbal": {
-   "w": 966,
-   "h": 980,
+   "w": 252,
+   "h": 256,
    "bron": "gpt/batch3/item_sneeuwbal.png",
    "pad": "spel/item_sneeuwbal.png",
-   "v": 1790874743
+   "v": 1790950730
   },
   "item_val": {
-   "w": 927,
-   "h": 487,
+   "w": 256,
+   "h": 134,
    "bron": "gpt/batch3/item_val.png",
    "pad": "spel/item_val.png",
-   "v": 1790874743
+   "v": 1790950730
   },
   "logo": {
    "w": 1418,
@@ -283,102 +283,102 @@
    "v": 1790874747
   },
   "uil_geraakt": {
-   "w": 825,
-   "h": 900,
+   "w": 434,
+   "h": 474,
    "bron": "gpt/batch5/uil_geraakt.png",
    "pad": "spel/uil_geraakt.png",
-   "v": 1790894121
+   "v": 1790950731
   },
   "uil_muur": {
-   "w": 919,
-   "h": 860,
+   "w": 484,
+   "h": 453,
    "bron": "gpt/batch5/uil_muur.png",
    "pad": "spel/uil_muur.png",
-   "v": 1790894121
+   "v": 1790950731
   },
   "uil_ref": {
-   "w": 699,
-   "h": 912,
+   "w": 368,
+   "h": 480,
    "bron": "gpt/batch5/uil_ref.png",
    "pad": "spel/uil_ref.png",
-   "v": 1790894122
+   "v": 1790950731
   },
   "uil_slide": {
-   "w": 868,
-   "h": 460,
+   "w": 457,
+   "h": 242,
    "bron": "gpt/batch5/uil_slide.png",
    "pad": "spel/uil_slide.png",
-   "v": 1790894564
+   "v": 1790950732
   },
   "uil_slinger": {
-   "w": 920,
-   "h": 814,
+   "w": 484,
+   "h": 428,
    "bron": "gpt/batch5/uil_slinger.png",
    "pad": "spel/uil_slinger.png",
-   "v": 1790894123
+   "v": 1790950732
   },
   "uil_sprong": {
-   "w": 920,
-   "h": 858,
+   "w": 484,
+   "h": 452,
    "bron": "gpt/batch5/uil_sprong.png",
    "pad": "spel/uil_sprong.png",
-   "v": 1790894124
+   "v": 1790950732
   },
   "uil_val": {
-   "w": 659,
-   "h": 900,
+   "w": 347,
+   "h": 474,
    "bron": "gpt/batch5/uil_val.png",
    "pad": "spel/uil_val.png",
-   "v": 1790894125
+   "v": 1790950732
   },
   "uil_winst": {
-   "w": 758,
-   "h": 900,
+   "w": 399,
+   "h": 474,
    "bron": "gpt/batch5/uil_winst.png",
    "pad": "spel/uil_winst.png",
-   "v": 1790894125
+   "v": 1790950732
   },
   "vijand_bulldozer": {
-   "w": 932,
-   "h": 762,
+   "w": 320,
+   "h": 262,
    "bron": "gpt/batch1/vijand_bulldozer.png",
    "pad": "spel/vijand_bulldozer.png",
-   "v": 1790851880
+   "v": 1790950732
   },
   "vijand_gifblob": {
-   "w": 907,
-   "h": 759,
+   "w": 320,
+   "h": 268,
    "bron": "gpt/batch1/vijand_gifblob.png",
    "pad": "spel/vijand_gifblob.png",
-   "v": 1790851880
+   "v": 1790950732
   },
   "vijand_olie": {
-   "w": 903,
-   "h": 721,
+   "w": 320,
+   "h": 256,
    "bron": "gpt/batch1/vijand_olie.png",
    "pad": "spel/vijand_olie.png",
-   "v": 1790851881
+   "v": 1790950732
   },
   "vijand_smog": {
-   "w": 916,
-   "h": 735,
+   "w": 320,
+   "h": 257,
    "bron": "gpt/batch1/vijand_smog.png",
    "pad": "spel/vijand_smog.png",
-   "v": 1790851881
+   "v": 1790950732
   },
   "vijand_vat": {
-   "w": 735,
-   "h": 882,
+   "w": 267,
+   "h": 320,
    "bron": "gpt/batch1/vijand_vat.png",
    "pad": "spel/vijand_vat.png",
-   "v": 1790851881
+   "v": 1790950732
   },
   "vijand_zaagrobot": {
-   "w": 923,
-   "h": 827,
+   "w": 320,
+   "h": 287,
    "bron": "gpt/batch1/vijand_zaagrobot.png",
    "pad": "spel/vijand_zaagrobot.png",
-   "v": 1790851882
+   "v": 1790950732
   },
   "vos_delen": {
    "w": 1478,
@@ -388,76 +388,76 @@
    "v": 1790851882
   },
   "vos_geraakt": {
-   "w": 898,
-   "h": 827,
+   "w": 461,
+   "h": 424,
    "bron": "gpt/batch1/vos_geraakt.png",
    "pad": "spel/vos_geraakt.png",
-   "v": 1790851883
+   "v": 1790950732
   },
   "vos_muur": {
-   "w": 685,
-   "h": 881,
+   "w": 351,
+   "h": 452,
    "bron": "gpt/batch1/vos_muur.png",
    "pad": "spel/vos_muur.png",
-   "v": 1790851883
+   "v": 1790950733
   },
   "vos_ref": {
-   "w": 772,
-   "h": 936,
+   "w": 396,
+   "h": 480,
    "bron": "gpt/batch1/vos_ref.png",
    "pad": "spel/vos_ref.png",
-   "v": 1790851884
+   "v": 1790950733
   },
   "vos_slide": {
-   "w": 926,
-   "h": 399,
+   "w": 475,
+   "h": 205,
    "bron": "gpt/batch1/vos_slide.png",
    "pad": "spel/vos_slide.png",
-   "v": 1790851884
+   "v": 1790950733
   },
   "vos_slinger": {
-   "w": 936,
-   "h": 621,
+   "w": 480,
+   "h": 318,
    "bron": "gpt/batch1/vos_slinger.png",
    "pad": "spel/vos_slinger.png",
-   "v": 1790851884
+   "v": 1790950733
   },
   "vos_sprong": {
-   "w": 938,
-   "h": 759,
+   "w": 481,
+   "h": 389,
    "bron": "gpt/batch1/vos_sprong.png",
    "pad": "spel/vos_sprong.png",
-   "v": 1790851885
+   "v": 1790950733
   },
   "vos_val": {
-   "w": 808,
-   "h": 911,
+   "w": 414,
+   "h": 467,
    "bron": "gpt/batch1/vos_val.png",
    "pad": "spel/vos_val.png",
-   "v": 1790851885
+   "v": 1790950734
   },
   "vos_winst": {
-   "w": 845,
-   "h": 912,
+   "w": 433,
+   "h": 468,
    "bron": "gpt/batch1/vos_winst.png",
    "pad": "spel/vos_winst.png",
-   "v": 1790851885
+   "v": 1790950734
   },
   "uil_ren": {
-   "w": 939,
-   "h": 867,
+   "w": 494,
+   "h": 456,
    "frames": 6,
    "sheet": true,
    "pad": "spel/uil_ren.png",
-   "v": 1790894569
+   "v": 1790950731
   },
   "vos_ren": {
-   "w": 885,
-   "h": 852,
+   "w": 454,
+   "h": 437,
    "frames": 6,
    "sheet": true,
    "pad": "spel/vos_ren.png",
-   "v": 1790894573
+   "v": 1790950733
   },
   "ui_knop": {
    "w": 687,
@@ -537,11 +537,11 @@
    "v": 1790894575
   },
   "tegel_grond": {
-   "w": 303,
-   "h": 234,
+   "w": 155,
+   "h": 120,
    "bron": "gpt/batch2/bos_tegels.png",
    "pad": "spel/tegel_grond.png",
-   "v": 1790894575
+   "v": 1790950731
   },
   "tegel_rand_rechts": {
    "w": 349,
@@ -579,32 +579,32 @@
    "v": 1790894575
   },
   "tegel_plafond": {
-   "w": 323,
-   "h": 180,
+   "w": 215,
+   "h": 120,
    "bron": "gpt/batch2/bos_tegels.png",
    "pad": "spel/tegel_plafond.png",
-   "v": 1790894575
+   "v": 1790950731
   },
   "tegel_platform_links": {
-   "w": 313,
-   "h": 143,
+   "w": 158,
+   "h": 72,
    "bron": "gpt/batch2/bos_tegels.png",
    "pad": "spel/tegel_platform_links.png",
-   "v": 1790894575
+   "v": 1790950731
   },
   "tegel_platform": {
-   "w": 298,
-   "h": 119,
+   "w": 180,
+   "h": 72,
    "bron": "gpt/batch2/bos_tegels.png",
    "pad": "spel/tegel_platform.png",
-   "v": 1790894575
+   "v": 1790950731
   },
   "tegel_platform_rechts": {
-   "w": 300,
-   "h": 142,
+   "w": 152,
+   "h": 72,
    "bron": "gpt/batch2/bos_tegels.png",
    "pad": "spel/tegel_platform_rechts.png",
-   "v": 1790894576
+   "v": 1790950731
   },
   "tegel_haakplafond": {
    "w": 351,
