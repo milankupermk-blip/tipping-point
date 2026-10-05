@@ -37,7 +37,10 @@ TP.Race = class extends Phaser.Scene {
     this.touw = this.wereldObject(this.add.graphics().setDepth(8));
     this.maakCameras();
     this.input.keyboard.on('keydown-F3', () => { this.debug = !this.debug; this.debugG.setVisible(this.debug); });
-    this.input.keyboard.on('keydown-ESC', () => { this.geluid.stopVuur(); this.scene.start('Menu'); });
+    this.input.keyboard.on('keydown-ESC', () => this.pauzeer());
+    this.input.keyboard.on('keydown-P', () => this.pauzeer());
+    // na de pauze: toetsen die tijdens de pauze zijn losgelaten niet als ingedrukt blijven zien
+    this.events.on('resume', () => this.input.keyboard.resetKeys());
     // R: meteen opnieuw (zelfde ronde, zelfde item), zonder vraag
     this.input.keyboard.on('keydown-R', () => { this.geluid.stopVuur(); this.scene.restart(this.opties); });
     const cam = this.cameras.main;
@@ -47,6 +50,13 @@ TP.Race = class extends Phaser.Scene {
     this.rondeNr = 0; this.spelerUitSinds = 0; this.laatsteStuk = -1;
     TP.muziek(this, 'muziek_race', 0.35);
     this.input.keyboard.on('keydown-M', () => { this.sound.mute = !this.sound.mute; TP.bewaar('tp_mute', this.sound.mute); });
+  }
+
+  pauzeer() {
+    if (!this.scene.isActive()) return;
+    if (TP.muziekSpoor && TP.muziekSpoor.isPlaying) TP.muziekSpoor.pause();
+    this.scene.launch('Pauze');
+    this.scene.pause();
   }
 
   // Drie camera's: achtergrond (vast), wereld (zoomt en volgt), interface (vast). Alles wat in de wereld staat
@@ -226,7 +236,8 @@ TP.Race = class extends Phaser.Scene {
     paneel(300, 70, 560, 100, true);
     this.hudStand = voeg(this.add.text(300, 70, '', { ...stijl(24), align: 'center' }).setOrigin(0.5));
     // rechtsboven: snelheid
-    this.hudSnelheid = voeg(this.add.text(W - 40, 30, '', stijl(26)).setOrigin(1, 0));
+    this.hudSnelheid = voeg(this.add.text(W - 250, 30, '', stijl(26)).setOrigin(1, 0));
+    voeg(TP.knop(this, W - 110, 52, 180, 72, 'II  Pauze', () => this.pauzeer(), 26));
     this.hudRonde = voeg(this.add.text(W / 2, 30, '', stijl(24, '#ffd23f')).setOrigin(0.5, 0));
 
     this.hudMelding = voeg(this.add.text(W / 2, H * 0.36, '', { fontFamily: TP.FONT_TITEL, fontSize: '150px', color: '#fff4dc', stroke: '#2a1a0c', strokeThickness: 14 }).setOrigin(0.5).setAlpha(0));
@@ -234,6 +245,7 @@ TP.Race = class extends Phaser.Scene {
 
     // tips voor de eerste races
     this.tipsGezien = TP.lees('tp_tips', 0);
+    this.tips = null;   // scene wordt hergebruikt: geen tips van de vorige race laten doorlopen
     if (this.tipsGezien < 3) {
       this.tipPaneel = paneel(W / 2, 150, 760, 90, true);
       this.tipTekst = voeg(this.add.text(W / 2, 150, '', stijl(28)).setOrigin(0.5));

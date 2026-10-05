@@ -62,7 +62,7 @@ TP.WERELDEN = {
   }
 };
 
-TP.WEDSTRIJD = { rondesNodig: 3, bots: 3 };
+TP.WEDSTRIJD = { rondesNodig: 3, bots: 3, vraagTijd: 60 };
 
 // Moeilijkheid. Bots: vaardigheid 0.6 .. 0.95. Inhalen: snelheidsbonus voor de speler als die achter de koploper ligt.
 // Camera: hoeveel het beeld naar de speler meeschuift als die achterligt (deel van de beeldbreedte).

@@ -6,6 +6,6 @@ window.spel = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width: TP.W, height: TP.H },
   render: { antialias: true, pixelArt: false, roundPixels: false, powerPreference: 'high-performance' },
   fps: { target: 120, min: 30 },
-  scene: [TP.Boot, TP.Menu, TP.Vraag, TP.Race, TP.Ronde, TP.Einde]
+  scene: [TP.Boot, TP.Menu, TP.Uitleg, TP.Vraag, TP.Race, TP.Ronde, TP.Einde, TP.Pauze]
 });
 window.addEventListener('resize', () => spel.scale.refresh());

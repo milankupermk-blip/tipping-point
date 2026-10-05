@@ -7,7 +7,7 @@ Snelle instap voor een volgende chat. Lees eerst `PLAN.md` (ontwerp en afstemmin
 - Preview: configuratie `tipping-point` in `.claude/launch.json` (poort 5180), of `python -m http.server 5180` in de projectmap.
 - Na nieuw artwork: `python tools/assets.py` (maakt `assets/manifest.json` en de bewerkte sprites in `assets/spel`).
   Daarna `python tools/verklein.py`: verkleint de sprites tot het formaat waarin ze in beeld komen (scheelt videogeheugen en laadtijd) en werkt het manifest bij.
-- Debugweergave in de race: F3. Esc terug naar het menu.
+- Debugweergave in de race: F3. P of Esc: pauze (met instructies en een knop naar het menu).
 
 ## Bestanden
 
@@ -21,7 +21,7 @@ Snelle instap voor een volgende chat. Lees eerst `PLAN.md` (ontwerp en afstemmin
 - `src/bots.js` — `TP.Bot`: invoerbron voor bots. Generiek vooruitkijken plus cues uit de baandata, routekeuze op vaardigheid, vastloop-omweg.
 - `src/banen/bos1.js` — `TP.BANEN.bos1` "Vuurlinie" (37800 langs het circuit, rondje van ~35 s voor een goede bot) en `TP.BANEN.bos2` "Kaalslag" (34200): onderlangs naar rechts (6 à 7 stukken), klim rechts (vijf platforms zigzag plus een wall-jump-schacht voor experts), bovenlangs naar links (gespiegelde stukken), afdaling links over drie platforms. Het bovenste been moet precies boven de afdaling eindigen (zie het commentaar bij de benen). Formaat staat bovenin `baan.js`.
 - `src/race.js` — `TP.Race` (Phaser-scene): achtergrondlagen, baan tekenen, renners tekenen en animeren, camera (volgt koploper, zoomt op het peloton), front aan de linkerrand, objecten (boost, kratten, obstakels, vijanden, vallen), projectielen, items, HUD, particles, rondewinst.
-- `src/schermen.js` — `TP.Boot`, `TP.Menu`, `TP.Vraag`, `TP.Ronde`, `TP.Einde` plus hulpfuncties `TP.knop`, `TP.paneel`, `TP.achtergrond`.
+- `src/schermen.js` — `TP.Boot`, `TP.Menu`, `TP.Uitleg` (schematische instructies vóór de eerste ronde), `TP.Vraag` (60 s, `TP.WEDSTRIJD.vraagTijd`), `TP.Ronde`, `TP.Einde`, `TP.Pauze` (over de stilgezette race heen; P, Esc of de knop rechtsboven) plus hulpfuncties `TP.knop`, `TP.paneel`, `TP.bord`, `TP.tekenUitleg`, `TP.achtergrond`.
 - `src/vragen.js` — `VRAGEN` en `FEITEN` voor het leerdeel.
 - `src/main.js` — Phaser-config en scenelijst.
 - `tools/verklein.py` — verkleint personages, vijanden, obstakels, items en baantegels in `assets/spel` en zet de nieuwe maten in het manifest. Herhaalbaar. De code schaalt alles op basis van het manifest, dus in beeld verandert niets.

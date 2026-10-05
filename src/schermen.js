@@ -45,6 +45,69 @@ TP.achtergrond = function (scene, wereld) {
   scene.add.rectangle(0, 0, W, H, 0x120a04, 0.45).setOrigin(0).setDepth(4);
 };
 
+// Eenvoudig donker bord met houtkleurige rand (het sierpaneel heeft een te dikke rand voor veel inhoud).
+TP.bord = function (scene, x, y, b, h, diepte) {
+  const g = scene.add.graphics().setDepth(diepte);
+  g.fillStyle(0x000000, 0.35).fillRoundedRect(x - b / 2 + 8, y - h / 2 + 12, b, h, 28);
+  g.fillStyle(0x1d1208, 0.97).fillRoundedRect(x - b / 2, y - h / 2, b, h, 28);
+  g.lineStyle(8, 0x8a5a2a, 1).strokeRoundedRect(x - b / 2, y - h / 2, b, h, 28);
+  g.lineStyle(2, 0xf4d9a8, 0.35).strokeRoundedRect(x - b / 2 + 12, y - h / 2 + 12, b - 24, h - 24, 20);
+  return g;
+};
+
+// Schematische spelinstructies (toetsen en doel) rond (cx, cy). Gebruikt door het uitlegscherm en de pauze.
+TP.tekenUitleg = function (scene, cx, cy, diepte) {
+  const c = scene.add.container(0, 0).setDepth(diepte);
+  const tekst = (x, y, t, gr, kleur, origin) => { const o = scene.add.text(x, y, t, { ...knopStijl(gr, kleur), align: 'left' }).setOrigin(...(origin || [0, 0.5])); c.add(o); return o; };
+  const toets = (x, y, label, b) => {
+    const w = b || 78, h = 78;
+    const g = scene.add.graphics();
+    g.fillStyle(0x2a1a0c, 1).fillRoundedRect(x - w / 2, y - h / 2 + 6, w, h, 14);
+    g.fillStyle(0xf4e6c8, 1).fillRoundedRect(x - w / 2, y - h / 2, w, h, 14);
+    g.lineStyle(4, 0x8a5a2a, 1).strokeRoundedRect(x - w / 2, y - h / 2, w, h, 14);
+    c.add(g);
+    c.add(scene.add.text(x, y, label, { fontFamily: TP.FONT, fontSize: '40px', color: '#2a1a0c' }).setOrigin(0.5));
+  };
+  tekst(cx, cy - 370, 'ZO SPEEL JE', 64, '#ffd23f', [0.5, 0.5]).setFontFamily(TP.FONT_TITEL);
+  // scheidingslijn tussen de kolommen
+  c.add(scene.add.rectangle(cx, cy - 20, 4, 560, 0x8a5a2a, 0.8));
+
+  // links: besturing
+  tekst(cx - 400, cy - 280, 'Besturing', 40, '#ffd23f', [0.5, 0.5]);
+  const ax = cx - 620, ay = cy - 120;
+  toets(ax, ay - 88, '↑'); toets(ax - 88, ay, '←'); toets(ax, ay, '↓'); toets(ax + 88, ay, '→');
+  tekst(cx - 490, cy - 222, '↑   springen (2x = dubbele sprong)', 28);
+  tekst(cx - 490, cy - 180, '      tegen een muur: wall-jump', 24, '#d9c9a8');
+  tekst(cx - 490, cy - 124, '← →   rennen', 28);
+  tekst(cx - 490, cy - 72, '↓   bukken / sliden', 28);
+  const rij = [['C', 'grijphaak (vasthouden)'], ['X', 'item gebruiken'], ['Z', 'dash'], ['V', 'schieten']];
+  rij.forEach(([k, uitleg], i) => {
+    const x = cx - 690 + (i % 2) * 390, y = cy + 50 + Math.floor(i / 2) * 110;
+    toets(x, y, k, 70);
+    tekst(x + 56, y, uitleg, 26);
+  });
+
+  // rechts: doel, met een klein schema: vuur, renners, pijl
+  tekst(cx + 400, cy - 280, 'Doel', 40, '#ffd23f', [0.5, 0.5]);
+  const sy = cy - 160;
+  for (let i = 0; i < 6; i++) c.add(scene.add.rectangle(cx + 70 + i * 22, sy, 22, 170, 0xff5a1f, 0.85 - i * 0.14));
+  tekst(cx + 130, sy + 110, 'vuur', 24, '#ff9b6a', [0.5, 0.5]);
+  const dier = (k, x) => { if (!TP.heeft(k)) return; const i = TP.manifest.beelden[k]; c.add(scene.add.image(x, sy + 75, k).setOrigin(0.5, 1).setScale(140 / i.h)); };
+  dier('uil_ref', cx + 330); dier('vos_ref', cx + 470);
+  tekst(cx + 470, sy - 100, 'jij', 24, '#ffd23f', [0.5, 0.5]);
+  tekst(cx + 640, sy, '➜', 90, '#ffd23f', [0.5, 0.5]);
+  [
+    'Ren weg van het vuur en blijf in beeld.',
+    'Raak je uit beeld, zit je vast of word je gelapt? Dan ben je af.',
+    'Wie als laatste overblijft, wint de ronde.',
+    'Wie als eerste 3 rondes wint, wint het spel.',
+    'Goed antwoord op de vraag = item bij de start.'
+  ].forEach((t, i) => { const o = tekst(cx + 60, cy - 10 + i * 62, '•  ' + t, 26); o.setWordWrapWidth(720); });
+
+  tekst(cx, cy + 300, 'P of Esc = pauze     M = muziek aan/uit     R = ronde opnieuw', 26, '#d9c9a8', [0.5, 0.5]);
+  return c;
+};
+
 // Muziek: één spoor tegelijk, loopt door over scenes heen; M dempt alles (onthouden).
 TP.muziek = function (scene, sleutel, volume) {
   const sm = scene.sound;
@@ -108,12 +171,12 @@ TP.Menu = class extends Phaser.Scene {
     banen.forEach((id, i) => {
       const x = W / 2 + (i - (banen.length - 1) / 2) * 560;
       const r = TP.lees('tp_record_' + id, null);
-      TP.knop(this, x, 640, 500, 120, TP.BANEN[id].naam, () => this.scene.start('Vraag', { wereld: 'bos', baan: id }), 44).setDepth(5);
+      TP.knop(this, x, 640, 500, 120, TP.BANEN[id].naam, () => this.scene.start('Uitleg', { wereld: 'bos', baan: id }), 44).setDepth(5);
       this.add.text(x, 735, r && r > 10 ? 'Beste ronde: ' + r.toFixed(2) + ' s' : 'Nog geen record', knopStijl(24, '#ffd23f')).setOrigin(0.5).setDepth(5);
     });
     const hulp = [
       '← →  rennen        ↑  springen (2x = dubbel, tegen een muur = wall-jump)        ↓  bukken / sliden',
-      'C  grijphaak (pakt plafonds en lianen)        X  item        V  schieten        Z  dash        R  opnieuw'
+      'C  grijphaak (pakt plafonds en lianen)        X  item        V  schieten        Z  dash        P  pauze'
     ];
     this.add.text(W / 2, H - 150, hulp.join('\n'), { ...knopStijl(26), lineSpacing: 12 }).setOrigin(0.5).setDepth(5);
     this.add.text(W / 2, H - 50, 'Je speelt als vos tegen uil, bever en ijsbeer. Eerste met drie ronden wint.   M = muziek aan/uit', knopStijl(24, '#d9c9a8')).setOrigin(0.5).setDepth(5);
@@ -124,8 +187,54 @@ TP.Menu = class extends Phaser.Scene {
       const v = this.add.image(W - 330, H - 120, 'vos_ref').setOrigin(0.5, 1).setScale(520 / info.h).setDepth(5);
       this.tweens.add({ targets: v, y: H - 135, duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
-    this.input.keyboard.once('keydown-SPACE', () => this.scene.start('Vraag', { wereld: 'bos', baan: 'bos1' }));
-    this.input.keyboard.once('keydown-ENTER', () => this.scene.start('Vraag', { wereld: 'bos', baan: 'bos1' }));
+    this.input.keyboard.once('keydown-SPACE', () => this.scene.start('Uitleg', { wereld: 'bos', baan: 'bos1' }));
+    this.input.keyboard.once('keydown-ENTER', () => this.scene.start('Uitleg', { wereld: 'bos', baan: 'bos1' }));
+  }
+};
+
+// ---------------------------------------------------------------- Uitleg (voor de eerste ronde)
+TP.Uitleg = class extends Phaser.Scene {
+  constructor() { super('Uitleg'); }
+  init(d) { this.opties = d; }
+  create() {
+    const W = TP.W, H = TP.H;
+    this.geluid = new TP.Geluid(this);
+    this.verder = false;   // scene wordt hergebruikt: resetten
+    TP.achtergrond(this, this.opties.wereld);
+    TP.bord(this, W / 2, H / 2, 1800, 1000, 5);
+    TP.tekenUitleg(this, W / 2, H / 2 - 10, 6);
+    const door = () => { if (this.verder) return; this.verder = true; this.scene.start('Vraag', this.opties); };
+    TP.knop(this, W / 2, H / 2 + 390, 560, 96, 'Begrepen!  (spatie)', door, 34).setDepth(6);
+    this.input.keyboard.on('keydown-SPACE', door);
+    this.input.keyboard.on('keydown-ENTER', door);
+  }
+};
+
+// ---------------------------------------------------------------- Pauze (over de stilgezette race heen)
+TP.Pauze = class extends Phaser.Scene {
+  constructor() { super('Pauze'); }
+  create() {
+    const W = TP.W, H = TP.H;
+    this.geluid = new TP.Geluid(this);
+    this.klaar = false;
+    this.add.rectangle(0, 0, W, H, 0x0a0502, 0.72).setOrigin(0).setInteractive();   // vangt klikken op de race eronder af
+    TP.bord(this, W / 2, H / 2, 1800, 1000, 5);
+    TP.tekenUitleg(this, W / 2, H / 2 - 10, 6);
+    this.add.text(W / 2 - 700, 92, 'PAUZE', { ...knopStijl(54, '#ffd23f'), fontFamily: TP.FONT_TITEL }).setOrigin(0.5).setDepth(6);
+    TP.knop(this, W / 2 - 300, H / 2 + 390, 520, 96, 'Verder spelen  (P)', () => this.verder(), 34).setDepth(6);
+    TP.knop(this, W / 2 + 300, H / 2 + 390, 520, 96, 'Naar menu', () => this.naarMenu(), 34).setDepth(6);
+    ['keydown-P', 'keydown-ESC', 'keydown-SPACE', 'keydown-ENTER'].forEach(k => this.input.keyboard.on(k, () => this.verder()));
+  }
+  verder() {
+    if (this.klaar) return; this.klaar = true;
+    if (TP.muziekSpoor && TP.muziekSpoor.isPaused) TP.muziekSpoor.resume();
+    this.scene.resume('Race');
+    this.scene.stop();
+  }
+  naarMenu() {
+    if (this.klaar) return; this.klaar = true;
+    this.scene.stop('Race');
+    this.scene.start('Menu');
   }
 };
 
@@ -140,7 +249,7 @@ TP.Vraag = class extends Phaser.Scene {
     const W = TP.W, H = TP.H;
     this.geluid = new TP.Geluid(this);
     TP.achtergrond(this, this.opties.wereld);
-    this.klaar = false; this.magDoor = false; this.gestart = false; this.tijd = 14; this.item = null;   // scene wordt hergebruikt: alles resetten
+    this.klaar = false; this.magDoor = false; this.gestart = false; this.tijd = TP.WEDSTRIJD.vraagTijd; this.item = null;   // scene wordt hergebruikt: alles resetten
     const gesteld = this.registry.get('gesteld') || [];
     const keuze = window.VRAGEN.filter((v, i) => !gesteld.includes(i));
     const index = window.VRAGEN.indexOf(Phaser.Utils.Array.GetRandom(keuze.length ? keuze : window.VRAGEN));
@@ -153,6 +262,7 @@ TP.Vraag = class extends Phaser.Scene {
     this.add.text(W / 2, 270, this.vraag.v, { ...knopStijl(48), wordWrap: { width: 1340 } }).setOrigin(0.5).setDepth(6);
     this.knoppen = this.vraag.a.map((a, i) => TP.knop(this, W / 2, 440 + i * 130, 1300, 104, (i + 1) + '.  ' + a, () => this.antwoord(i), 32).setDepth(6));
     this.balk = this.add.rectangle(W / 2 - 650, 840, 1300, 16, 0xffd23f).setOrigin(0, 0.5).setDepth(6);
+    this.teller = this.add.text(W / 2, 800, '', knopStijl(30, '#ffd23f')).setOrigin(0.5).setDepth(6);
     this.uitleg = this.add.text(W / 2, 900, '', { ...knopStijl(30), wordWrap: { width: 1400 } }).setOrigin(0.5, 0).setDepth(6);
     this.input.keyboard.on('keydown', e => {
       if (!this.klaar && ['1', '2', '3'].includes(e.key)) this.antwoord(+e.key - 1);
@@ -162,19 +272,21 @@ TP.Vraag = class extends Phaser.Scene {
   update(_, dms) {
     if (this.klaar) return;
     this.tijd -= dms / 1000;
-    this.balk.width = Math.max(0, 1300 * this.tijd / 14);
+    this.balk.width = Math.max(0, 1300 * this.tijd / TP.WEDSTRIJD.vraagTijd);
+    this.teller.setText('nog ' + Math.ceil(Math.max(0, this.tijd)) + ' seconden');
     if (this.tijd <= 0) this.antwoord(-1);
   }
   antwoord(i) {
     if (this.klaar) return;
-    this.klaar = true; this.balk.setVisible(false);
+    this.klaar = true; this.balk.setVisible(false); this.teller.setVisible(false);
     const goed = i === this.vraag.goed;
     this.knoppen.forEach((k, n) => { k.list[0].disableInteractive(); if (!TP.heeft('ui_knop')) k.list[0].setFillStyle(n === this.vraag.goed ? 0x2e7d4f : n === i ? 0x8c3a2e : 0x5a3a1c); else k.list[0].setTint(n === this.vraag.goed ? 0x9bff9b : n === i ? 0xff9b9b : 0xaaaaaa); });
     let regel = (goed ? 'Goed!  ' : i < 0 ? 'Te laat.  ' : 'Niet goed.  ') + this.vraag.uitleg;
     this.geluid.speel(goed ? 'bevestig' : 'fout');
     if (goed) { this.item = Phaser.Utils.Array.GetRandom(Object.keys(TP.ITEMS)); regel += '\nJe start met: ' + TP.ITEMS[this.item].naam + '. ' + TP.ITEMS[this.item].uitleg; }
-    this.uitleg.setText(regel + '\n\nSpatie om te starten');
-    this.time.delayedCall(500, () => { this.magDoor = true; this.input.once('pointerdown', () => this.start()); });
+    this.uitleg.setText(regel);
+    // na het antwoord meteen door: knop, spatie of enter
+    this.time.delayedCall(400, () => { this.magDoor = true; TP.knop(this, TP.W / 2, 830, 560, 90, 'Start de race  (spatie)', () => this.start(), 32).setDepth(7); });
   }
   start() { if (this.gestart) return; this.gestart = true; this.scene.start('Race', { ...this.opties, item: this.item }); }
 };
