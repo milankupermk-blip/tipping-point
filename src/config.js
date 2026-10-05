@@ -53,6 +53,10 @@ TP.ITEMS = {
   sneeuwbal:{ naam: 'Sneeuwbal',  uitleg: 'Bevriest de tegenstander voor je.' },
   magneet:  { naam: 'Magneet',    uitleg: 'Trekt je naar het dichtstbijzijnde ankerpunt.' }
 };
+// Besturing is simpel gehouden: pijltjes, spatie = vuur, shift = dash. De grijphaak staat uit (ook voor bots) en daarmee
+// ook de magneet, die naar haakpunten trekt. Zet haak op true om beide terug te krijgen (toets C).
+TP.HAAK = false;
+if (!TP.HAAK) delete TP.ITEMS.magneet;
 
 TP.WERELDEN = {
   bos: {

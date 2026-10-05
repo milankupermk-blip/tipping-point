@@ -174,7 +174,7 @@ TP.Renner = class {
     }
 
     // haak vastgrijpen
-    if (inp.haak && T.verdoofd <= 0) {
+    if (inp.haak && TP.HAAK && T.verdoofd <= 0) {
       const hand = this.handY();
       const a = this.baan.ankerVoor(this.x, hand, this.richting, F.haakBereik);
       if (a) {

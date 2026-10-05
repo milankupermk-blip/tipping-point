@@ -221,12 +221,12 @@ TP.Race = class extends Phaser.Scene {
     slot(W / 2 - 440, H - 80, 118);
     this.hudItemBeeld = voeg(this.add.image(W / 2 - 440, H - 84, 'vos_ref').setVisible(false));
     this.hudItemTekst = voeg(this.add.text(W / 2 - 340, H - 100, '', stijl(26, '#ffd23f')).setOrigin(0, 0.5));
-    this.hudItemHint = voeg(this.add.text(W / 2 - 340, H - 66, 'X  item', stijl(20, '#d9c9a8')).setOrigin(0, 0.5));
+    this.hudItemHint = voeg(this.add.text(W / 2 - 340, H - 66, 'Spatie  vuur', stijl(20, '#d9c9a8')).setOrigin(0, 0.5));
     slot(W / 2 - 120, H - 80, 118);
     this.hudDashSchaduw = voeg(this.add.graphics());
     this.hudDashTekst = voeg(this.add.text(W / 2 - 120, H - 84, 'DASH', stijl(22)).setOrigin(0.5));
     voeg(this.add.text(W / 2 - 20, H - 100, 'Dash', stijl(26, '#ffd23f')).setOrigin(0, 0.5));
-    this.hudDashSub = voeg(this.add.text(W / 2 - 20, H - 66, 'Z  klaar', stijl(20, '#d9c9a8')).setOrigin(0, 0.5));
+    this.hudDashSub = voeg(this.add.text(W / 2 - 20, H - 66, 'Shift  klaar', stijl(20, '#d9c9a8')).setOrigin(0, 0.5));
     this.hudPlek = voeg(this.add.text(W / 2 + 230, H - 84, '1e', stijl(64)).setOrigin(0.5));
     this.hudPlekSub = voeg(this.add.text(W / 2 + 230, H - 36, '', stijl(20, '#d9c9a8')).setOrigin(0.5));
     this.hudTijd = voeg(this.add.text(W / 2 + 470, H - 92, '0.00', stijl(44)).setOrigin(0.5));
@@ -249,7 +249,7 @@ TP.Race = class extends Phaser.Scene {
     if (this.tipsGezien < 3) {
       this.tipPaneel = paneel(W / 2, 150, 760, 90, true);
       this.tipTekst = voeg(this.add.text(W / 2, 150, '', stijl(28)).setOrigin(0.5));
-      this.tips = ['Pijltjes links en rechts: rennen. Pijltje omhoog: springen, 2x = dubbele sprong', 'Pijltje omlaag: bukken en sliden onder lage takken. Bergaf is sliden het snelst.', 'Houd C vast bij een plafond of liaan: grijphaak. Loslaten geeft vaart.', 'Spring tegen een muur en spring opnieuw: wall-jump.', 'Wie opzij uit beeld raakt, is gepakt. Blijf bij de koploper.', 'Z: dash. X: item uit een krat gebruiken.'];
+      this.tips = ['Pijltjes links en rechts: rennen. Pijltje omhoog: springen, 2x = dubbele sprong', 'Pijltje omlaag: bukken en sliden onder lage takken. Bergaf is sliden het snelst.', 'Spatie: vuur. Heb je een item uit een krat, dan gebruik je het, anders schiet je een eikel.', 'Shift: dash, een snelle sprint vooruit.', 'Wie opzij uit beeld raakt, is gepakt. Blijf bij de koploper.'];
       this.tipIndex = -1; this.tipTimer = 0;
       TP.bewaar('tp_tips', this.tipsGezien + 1);
     }
@@ -277,7 +277,7 @@ TP.Race = class extends Phaser.Scene {
     for (const s of this.baan.grond) { if (!s.blokTop) this.tekenGrond(s); }
     for (const b of this.baan.blokken) this.tekenBlok(b);
     for (const a of this.baan.ankers) {
-      if (TP.heeft('bos_obstakel_5')) {
+      if (TP.HAAK && TP.heeft('bos_obstakel_5')) {
         const info = TP.manifest.beelden['bos_obstakel_5'];
         a.sprite = this.add.image(a.x, a.y - 30, 'bos_obstakel_5').setOrigin(0.5, 0.08).setScale(150 / info.h);
         this.laagObjecten.add(a.sprite);
@@ -498,7 +498,7 @@ TP.Race = class extends Phaser.Scene {
         continue;
       }
       if (o.type === 'krat') {
-        if (raakt) { o.levend = false; this.vernietig(o); const nieuw = !r.item; r.item = r.item || Phaser.Utils.Array.GetRandom(Object.keys(TP.ITEMS)); r.meld('krat'); this.speelFx('fx_inslag', o.x, o.y - 40, 0.3); o.respawn = this.tijd + 12; if (r.isSpeler && nieuw) { this.toonTussentijd(TP.ITEMS[r.item].naam + ': ' + TP.ITEMS[r.item].uitleg + '  Druk op X'); this.itemPop = 0.5; } }
+        if (raakt) { o.levend = false; this.vernietig(o); const nieuw = !r.item; r.item = r.item || Phaser.Utils.Array.GetRandom(Object.keys(TP.ITEMS)); r.meld('krat'); this.speelFx('fx_inslag', o.x, o.y - 40, 0.3); o.respawn = this.tijd + 12; if (r.isSpeler && nieuw) { this.toonTussentijd(TP.ITEMS[r.item].naam + ': ' + TP.ITEMS[r.item].uitleg + '  Druk op spatie'); this.itemPop = 0.5; } }
         continue;
       }
       if (o.type === 'val') {
@@ -704,14 +704,14 @@ TP.Race = class extends Phaser.Scene {
     this.hudStand.setText(this.stand.namen.map((n, i) => n + ' ' + '●'.repeat(this.stand.punten[i]) + '○'.repeat(TP.WEDSTRIJD.rondesNodig - this.stand.punten[i])).join('   '));
     if (sp.item && TP.heeft('item_' + sp.item)) { const i = TP.manifest.beelden['item_' + sp.item]; this.itemPop = Math.max(0, (this.itemPop || 0) - dt); const pop = 1 + Math.sin(Math.min(1, this.itemPop / 0.5) * Math.PI) * 0.6; this.hudItemBeeld.setTexture('item_' + sp.item).setScale(76 / Math.max(i.w, i.h) * pop).setVisible(true); } else this.hudItemBeeld.setVisible(false);
     this.hudItemTekst.setText(sp.item ? TP.ITEMS[sp.item].naam : (sp.schild ? 'Bladschild' : 'geen item'));
-    this.hudItemHint.setText(sp.item ? 'X  gebruiken' : 'X  item');
+    this.hudItemHint.setText(sp.item ? 'Spatie  gebruiken' : 'Spatie  eikel');
     const hintKleur = sp.item && Math.floor(this.tijd * 3) % 2 ? '#ffd23f' : '#d9c9a8';
     if (this.hudItemHint.style.color !== hintKleur) this.hudItemHint.setColor(hintKleur);
     const af = sp.t.dashAfkoel / TP.FYS.dashAfkoel;
     this.hudDashSchaduw.clear();
     if (af > 0) { this.hudDashSchaduw.fillStyle(0x000000, 0.55).slice(TP.W / 2 - 120, TP.H - 80, 46, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * af, false).fillPath(); }
     this.hudDashTekst.setText(af > 0 ? String(Math.ceil(sp.t.dashAfkoel)) : 'DASH');
-    this.hudDashSub.setText(af > 0 ? 'Z  laden' : 'Z  klaar');
+    this.hudDashSub.setText(af > 0 ? 'Shift  laden' : 'Shift  klaar');
     this.hudSnelheidKlok = (this.hudSnelheidKlok || 0) - dt;
     if (this.hudSnelheidKlok <= 0) { this.hudSnelheidKlok = 0.12; this.hudSnelheid.setText(Math.round(Math.abs(sp.vx) / 10) + ' km/u'); }
     if (this.tips) {
