@@ -67,6 +67,12 @@ TP.Baan = class {
       this.benen.push(b);
     }
     this.lengte = p;
+    // buitenmuren links en rechts van het hele circuit: wie met vaart (dash) voorbij de laatste grond vliegt, valt niet van de wereld
+    const xs1 = this.grond.map(s => s.x1).concat(this.blokken.map(k => k.x)), xs2 = this.grond.map(s => s.x2).concat(this.blokken.map(k => k.x + k.w));
+    const ys = this.grond.flatMap(s => [s.y1, s.y2]);
+    const boven = Math.min(...ys) - 1600, onder = Math.max(...ys) + 300;
+    this.blokken.push({ x: Math.min(...xs1) - 160, y: boven, w: 160, h: onder - boven, rand: true });
+    this.blokken.push({ x: Math.max(...xs2), y: boven, w: 160, h: onder - boven, rand: true });
   }
 
   plaatsStuk(c, ox, oy, spiegel, been) {
@@ -195,12 +201,16 @@ TP.Baan = class {
     return best;
   }
 
-  landing(x, yOud, yNieuw) {
+  // Landt een val van (xOud, yOud) naar (x, yNieuw) op een grondlijn? De lijn moet aan het begin onder de voeten liggen
+  // (gemeten bij xOud) en aan het eind erboven (bij x). Met alleen x zakte je door een helling die je kant op stijgt:
+  // na de zijwaartse stap lag die al net boven je voeten.
+  landing(x, yOud, yNieuw, xOud) {
     let best = null;
     for (const s of this.grond) {
       if (x < s.x1 || x > s.x2) continue;
       const h = TP.Baan.hoogteOp(s, x);
-      if (h < yOud - 1 || h > yNieuw + 0.01) continue;
+      const hOud = xOud === undefined ? h : TP.Baan.hoogteOp(s, Math.min(s.x2, Math.max(s.x1, xOud)));
+      if (Math.max(h, hOud) < yOud - 1 || h > yNieuw + 0.01) continue;
       if (!best || h < best.y) best = { y: h, hoek: s.hoek, seg: s };
     }
     return best;

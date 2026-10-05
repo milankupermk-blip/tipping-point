@@ -185,6 +185,7 @@ TP.Renner = class {
     }
 
     // bewegen x
+    const xOud = this.x;
     const nx = this.x + this.vx * dt;
     const muur = this.botsMuren(nx, this.y);
     this.x = muur.x;
@@ -200,7 +201,7 @@ TP.Renner = class {
     const yOud = this.y;
     const ny = this.y + this.vy * dt;
     if (this.vy > 0) {
-      const l = this.baan.landing(this.x, yOud, ny);
+      const l = this.baan.landing(this.x, yOud, ny, xOud);
       if (l) {
         this.y = l.y; this.hoek = l.hoek; this.grondSeg = l.seg;
         this.opGrond = true; this.sprongen = 0; this.aanMuur = 0;
