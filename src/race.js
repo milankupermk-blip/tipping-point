@@ -422,11 +422,22 @@ TP.Race = class extends Phaser.Scene {
   schiet(r) {
     if (r.t.schot > 0) return;
     r.t.schot = 0.5;
-    const p = { x: r.x + 30 * r.richting, y: r.y - r.hoogte * 0.6, vx: r.richting * (Math.abs(r.vx) + 1300), van: r, leven: 0.7, raket: false };
+    const p = { x: r.x + 30 * r.richting, y: r.y - r.hoogte * 0.4, vx: r.richting * (Math.abs(r.vx) + 1300), van: r, leven: 0.7, raket: false };
+    // richthulp: het schot buigt af naar de dichtstbijzijnde vijand vóór je, als die niet te ver boven of onder je zit
+    let best = Infinity;
+    for (const o of this.baan.objecten) {
+      if (!o.levend || o.type !== 'vijand') continue;
+      const voor = (o.x - p.x) * r.richting, dy = Math.abs(this.vijandMidden(o) - p.y);
+      if (voor < 0 || voor > 1500 || dy > 260 || voor + dy >= best) continue;
+      best = voor + dy; p.doelVijand = o;
+    }
     p.sprite = this.maakProjectielBeeld(p);
     this.projectielen.push(p);
     r.meld('schiet');
   }
+
+  // hoogte van het midden van een vijand zoals hij getekend wordt (zwevers deinen op en neer)
+  vijandMidden(o) { return (o.sprite ? o.sprite.y : o.y) - o.h / 2; }
 
   valtUitBeeld(r) {
     r.x = r.laatsteGrondX !== undefined ? r.laatsteGrondX : r.x; r.y = r.laatsteGrondY !== undefined ? r.laatsteGrondY - 2 : r.y;
@@ -542,6 +553,7 @@ TP.Race = class extends Phaser.Scene {
   stapProjectielen(dt) {
     for (const p of this.projectielen) {
       p.x += p.vx * dt; p.leven -= dt;
+      if (p.doelVijand && p.doelVijand.levend) p.y += Phaser.Math.Clamp(this.vijandMidden(p.doelVijand) - p.y, -900 * dt, 900 * dt);
       if (p.raket && p.doel && !p.doel.dood) { p.y += Phaser.Math.Clamp((p.doel.y - 80) - p.y, -900 * dt, 900 * dt); if (Math.sign(p.doel.x - p.x) !== Math.sign(p.vx)) p.vx *= -1; }   // raket zoekt zijn doel
       if (p.sprite) { p.sprite.setPosition(p.x, p.y); if (p.sprite.setFlipX) p.sprite.setFlipX(p.vx < 0); p.sprite.setAngle(p.raket ? Math.sin(this.tijd * 20) * 4 : p.sprite.angle + 600 * dt); }
       if (p.raket && this.fx.vonken && Math.random() < 0.5) this.fx.vonken.emitParticleAt(p.x - 30 * Math.sign(p.vx), p.y, 1);
@@ -556,7 +568,8 @@ TP.Race = class extends Phaser.Scene {
       }
       for (const o of this.baan.objecten) {
         if (!o.levend || o.type !== 'vijand') continue;
-        if (Math.abs(o.x - p.x) < o.w / 2 + 20 && p.y > o.y - o.h - 10 && p.y < o.y + 10) { p.leven = 0; o.levend = false; this.vernietig(o, true); o.respawn = this.tijd + 15; this.speelFx('fx_inslag', o.x, o.y - o.h / 2, 0.4); }
+        const onder = o.sprite ? o.sprite.y : o.y;   // zwevers: de getekende hoogte
+        if (Math.abs(o.x - p.x) < o.w / 2 + 25 && p.y > onder - o.h - 35 && p.y < onder + 20) { p.leven = 0; o.levend = false; this.vernietig(o, true); o.respawn = this.tijd + 15; this.speelFx('fx_inslag', o.x, o.y - o.h / 2, 0.4); }
       }
       if (p.leven <= 0 && p.sprite) { p.sprite.destroy(); p.sprite = null; }
     }
