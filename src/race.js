@@ -37,19 +37,23 @@ TP.Race = class extends Phaser.Scene {
     this.touw = this.wereldObject(this.add.graphics().setDepth(8));
     this.maakCameras();
     this.input.keyboard.on('keydown-F3', () => { this.debug = !this.debug; this.debugG.setVisible(this.debug); });
-    this.input.keyboard.on('keydown-ESC', () => this.pauzeer());
-    this.input.keyboard.on('keydown-P', () => this.pauzeer());
+    // e.repeat: een ingedrukt gehouden toets herhaalt zich in de browser; die herhalingen negeren
+    // de P of Esc waarmee de pauze net sloot, leest de race na het hervatten nog een keer: die niet als 'pauzeer' zien
+    const pauzeToets = e => { if (!e.repeat && e !== TP.pauzeSluitToets) this.pauzeer(); };
+    this.input.keyboard.on('keydown-ESC', pauzeToets);
+    this.input.keyboard.on('keydown-P', pauzeToets);
     // na de pauze: toetsen die tijdens de pauze zijn losgelaten niet als ingedrukt blijven zien
-    this.events.on('resume', () => this.input.keyboard.resetKeys());
-    // R: meteen opnieuw (zelfde ronde, zelfde item), zonder vraag
-    this.input.keyboard.on('keydown-R', () => { this.geluid.stopVuur(); this.scene.restart(this.opties); });
+    const hervat = () => this.input.keyboard.resetKeys();
+    this.events.on('resume', hervat);
+    this.events.once('shutdown', () => this.events.off('resume', hervat));
+    // R: meteen opnieuw (zelfde ronde, zelfde item), zonder vraag; niet na de finish, dan is het punt al vergeven
+    this.input.keyboard.on('keydown-R', e => { if (e.repeat || (this.fase !== 'race' && this.fase !== 'aftel')) return; this.geluid.stopVuur(); this.scene.restart(this.opties); });
     const cam = this.cameras.main;
     cam.setZoom(TP.CAMERA.zoomMin);
     cam.centerOn(this.speler.x + 500, this.speler.y - 300);
     this.frontKant = -1; this.frontAlpha = 1; this.frontKantBeeld = undefined; this.frontX = undefined;
     this.rondeNr = 0; this.spelerUitSinds = 0; this.laatsteStuk = -1;
     TP.muziek(this, 'muziek_race', 0.35);
-    this.input.keyboard.on('keydown-M', () => { this.sound.mute = !this.sound.mute; TP.bewaar('tp_mute', this.sound.mute); });
   }
 
   pauzeer() {
@@ -267,7 +271,7 @@ TP.Race = class extends Phaser.Scene {
   }
 
   toonTussentijd(tekst) {
-    this.hudTussen.setText(tekst).setAlpha(1);
+    this.hudTussen.setText(tekst).setAlpha(1).setColor('#9bff6a');
     this.tweens.killTweensOf(this.hudTussen);
     this.tweens.add({ targets: this.hudTussen, alpha: 0, delay: 1400, duration: 400 });
   }
@@ -513,7 +517,7 @@ TP.Race = class extends Phaser.Scene {
         continue;
       }
       if (o.type === 'val') {
-        if (o.armTijd > 0) { o.armTijd -= dt; continue; }
+        if (o.armTijd > 0 || r === o.van) continue;
         if (raakt && !(o.geraakt && o.geraakt[r.id])) {
           (o.geraakt = o.geraakt || {})[r.id] = true;
           if (o.t === 'val') { r.t.traag = 1.0; r.meld('traag'); if (r.isSpeler) this.toonMelding('Honingval van ' + (o.van ? o.van.naam : '?') + '!', 1.0, 70); } else { r.t.grip = 0.9; r.vx *= 0.5; r.richting *= -1; r.meld('traag'); if (r.isSpeler) this.toonMelding('Olie! Je glijdt weg', 1.0, 70); }
@@ -541,6 +545,7 @@ TP.Race = class extends Phaser.Scene {
 
   stapVijanden(dt) {
     for (const o of this.baan.objecten) {
+      if (o.armTijd > 0) o.armTijd -= dt;   // val en olie zijn pas na even scherp
       // kratten en vijanden komen terug (het circuit wordt meerdere keren gereden)
       if (!o.levend && o.respawn && this.tijd > o.respawn) { o.levend = true; o.respawn = 0; o.x = o.x0; this.maakObjectBeeld(o); if (o.sprite) { o.sprite.setAlpha(0); this.tweens.add({ targets: o.sprite, alpha: 1, duration: 400 }); } }
       if (!o.levend || o.type !== 'vijand') continue;
@@ -589,6 +594,7 @@ TP.Race = class extends Phaser.Scene {
     // alleen wie nog meedoet bepaalt het beeld (ook in de hoogte): wie vastzit of ver achterligt, raakt vanzelf uit beeld en is af
     const N = TP.NIVEAU;
     const meedoen = this.renners.filter(r => !r.dood && (r === k || (k.vooruit - r.vooruit < N.cameraAchterstand && this.rondeTijd - (r.vooruitTijd || 0) < N.vastTijd)));
+    if (!meedoen.length) meedoen.push(k);   // niemand meer over (laatste twee tegelijk af): blijf bij de koploper
     const xs = meedoen.map(r => r.x), ys = meedoen.map(r => r.y);
     const bx1 = Math.min(...xs), bx2 = Math.max(...xs), by1 = Math.min(...ys), by2 = Math.max(...ys);
     // zoom: de meute in beeld, maar in de loop van de ronde steeds krapper
@@ -714,7 +720,7 @@ TP.Race = class extends Phaser.Scene {
     this.hudPlek.setText(sp.dood ? 'Uit' : plek + 'e');
     this.hudPlekSub.setText(levend.length + ' in de race');
     this.hudRondje.setText('rondje ' + (Math.floor(Math.max(0, sp.vooruit) / this.baan.lengte) + 1));
-    this.hudStand.setText(this.stand.namen.map((n, i) => n + ' ' + '●'.repeat(this.stand.punten[i]) + '○'.repeat(TP.WEDSTRIJD.rondesNodig - this.stand.punten[i])).join('   '));
+    this.hudStand.setText(this.stand.namen.map((n, i) => n + ' ' + '●'.repeat(this.stand.punten[i]) + '○'.repeat(Math.max(0, TP.WEDSTRIJD.rondesNodig - this.stand.punten[i]))).join('   '));
     if (sp.item && TP.heeft('item_' + sp.item)) { const i = TP.manifest.beelden['item_' + sp.item]; this.itemPop = Math.max(0, (this.itemPop || 0) - dt); const pop = 1 + Math.sin(Math.min(1, this.itemPop / 0.5) * Math.PI) * 0.6; this.hudItemBeeld.setTexture('item_' + sp.item).setScale(76 / Math.max(i.w, i.h) * pop).setVisible(true); } else this.hudItemBeeld.setVisible(false);
     this.hudItemTekst.setText(sp.item ? TP.ITEMS[sp.item].naam : (sp.schild ? 'Bladschild' : 'geen item'));
     this.hudItemHint.setText(sp.item ? 'Spatie  gebruiken' : 'Spatie  eikel');
@@ -734,7 +740,7 @@ TP.Race = class extends Phaser.Scene {
     // vastloop-detector voor de speler: richting ingedrukt maar geen vaart -> laat zien waarom
     const inp = sp.laatsteInvoer || {};
     if (!sp.dood && this.fase === 'race' && inp.x !== 0 && Math.abs(sp.vx) < 150) this.stilTijd = (this.stilTijd || 0) + dt; else this.stilTijd = 0;
-    if (this.stilTijd > 1.5) {
+    if (this.stilTijd > 1.5 && this.debug) {
       const T = sp.t;
       const redenen = [];
       if (T.verdoofd > 0) redenen.push('verdoofd'); if (T.bevroren > 0) redenen.push('bevroren'); if (T.traag > 0) redenen.push('honing'); if (T.grip > 0) redenen.push('olie');

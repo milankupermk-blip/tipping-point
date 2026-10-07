@@ -32,7 +32,7 @@ Snelle instap voor een volgende chat. Lees eerst `PLAN.md` (ontwerp en afstemmin
 1. `update` telt tijd op en roept `fysicaStap` aan in vaste stappen van 1/120 s.
 2. `fysicaStap`: per renner `stap(dt)` (invoer lezen, bewegen, voortgang langs het circuit bijhouden in `r.vooruit`), dan `botsObjecten`; vijanden en projectielen; kratten en vijanden komen na een tijd terug.
 3. `volgCamera`: koploper (hoogste `vooruit`) op 62 procent van het beeld in zijn looprichting, zoom zodat het peloton in beeld blijft (alleen renners die meedoen: niet meer dan `TP.NIVEAU.cameraAchterstand` achter en niet langer dan `vastTijd` s zonder vooruitgang; wie vastzit raakt zo vanzelf uit beeld), krapper naarmate de ronde vordert.
-4. `controleerFront`: wie gelapt wordt (de koploper is bijna een rondje verder) is af. Wie opzij uit beeld raakt (doodslijn = binnenrand van de vuurband, `frontMarge`) is gepakt; is de speler af, dan eindigt de ronde na 1,5 s met de koploper als winnaar (het front staat aan de kant waar de koploper vandaan komt; boven en onder is er wat extra ruimte). Eén over = ronde voorbij.
+4. `controleerFront`: wie gelapt wordt (de koploper is bijna een rondje verder) is af. Wie opzij uit beeld raakt (doodslijn = binnenrand van de vuurband, `frontMarge`) is gepakt; de ronde loopt door tot er één renner over is, ook als de speler al af is (je kijkt dan mee) (het front staat aan de kant waar de koploper vandaan komt; boven en onder is er wat extra ruimte). Eén over = ronde voorbij.
 5. `tekenAlles`: parallax, front, renners (pose of ren-animatie, squash en stretch), touw, HUD (houten onderbalk: item, dash, plek, tijd; stand linksboven; tips in de eerste drie races), debug.
 
 ## Artwork-sleutels die de code verwacht

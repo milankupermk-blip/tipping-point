@@ -113,10 +113,6 @@ TP.muziek = function (scene, sleutel, volume) {
   TP.muziekSpoor = sm.add(sleutel, { loop: true, volume: volume || 0.4 });
   TP.muziekSpoor.play();
   sm.mute = TP.lees('tp_mute', false);
-  if (!TP.muteToets) {
-    TP.muteToets = true;
-    scene.input.keyboard.on('keydown-M', () => { sm.mute = !sm.mute; TP.bewaar('tp_mute', sm.mute); });
-  }
 };
 
 TP.bewaar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
@@ -196,7 +192,7 @@ TP.Uitleg = class extends Phaser.Scene {
     TP.achtergrond(this, this.opties.wereld);
     TP.bord(this, W / 2, H / 2, 1800, 1000, 5);
     TP.tekenUitleg(this, W / 2, H / 2 - 10, 6);
-    const door = () => { if (this.verder) return; this.verder = true; this.scene.start('Race', { ...this.opties, uitleg: false }); };
+    const door = e => { if (this.verder || (e && e.repeat)) return; this.verder = true; this.scene.start('Race', { ...this.opties, uitleg: false }); };
     TP.knop(this, W / 2, H / 2 + 390, 600, 96, 'Start de race!  (spatie)', door, 34).setDepth(6);
     this.input.keyboard.on('keydown-SPACE', door);
     this.input.keyboard.on('keydown-ENTER', door);
@@ -216,7 +212,7 @@ TP.Pauze = class extends Phaser.Scene {
     this.add.text(W / 2 - 700, 92, 'PAUZE', { ...knopStijl(54, '#ffd23f'), fontFamily: TP.FONT_TITEL }).setOrigin(0.5).setDepth(6);
     TP.knop(this, W / 2 - 300, H / 2 + 390, 520, 96, 'Verder spelen  (P)', () => this.verder(), 34).setDepth(6);
     TP.knop(this, W / 2 + 300, H / 2 + 390, 520, 96, 'Naar menu', () => this.naarMenu(), 34).setDepth(6);
-    ['keydown-P', 'keydown-ESC', 'keydown-ENTER'].forEach(k => this.input.keyboard.on(k, () => this.verder()));
+    ['keydown-P', 'keydown-ESC', 'keydown-ENTER'].forEach(k => this.input.keyboard.on(k, e => { if (e.repeat) return; TP.pauzeSluitToets = e; this.verder(); }));
   }
   verder() {
     if (this.klaar) return; this.klaar = true;
@@ -258,6 +254,7 @@ TP.Vraag = class extends Phaser.Scene {
     this.teller = this.add.text(W / 2, 800, '', knopStijl(30, '#ffd23f')).setOrigin(0.5).setDepth(6);
     this.uitleg = this.add.text(W / 2, 900, '', { ...knopStijl(30), wordWrap: { width: 1400 } }).setOrigin(0.5, 0).setDepth(6);
     this.input.keyboard.on('keydown', e => {
+      if (e.repeat) return;
       if (!this.klaar && ['1', '2', '3'].includes(e.key)) this.antwoord(+e.key - 1);
       else if (this.klaar && this.magDoor && (e.code === 'Space' || e.code === 'Enter')) this.start();
     });
@@ -299,7 +296,7 @@ TP.Ronde = class extends Phaser.Scene {
     volgorde.forEach((i, rij) => {
       const kleur = i === this.opties.winnaar ? '#9bff6a' : '#fff4dc';
       this.add.text(W / 2 - 380, H / 2 - 150 + rij * 90, st.namen[i], knopStijl(44, kleur)).setOrigin(0, 0.5).setDepth(6);
-      this.add.text(W / 2 + 380, H / 2 - 150 + rij * 90, '●'.repeat(st.punten[i]) + '○'.repeat(TP.WEDSTRIJD.rondesNodig - st.punten[i]), knopStijl(44, kleur)).setOrigin(1, 0.5).setDepth(6);
+      this.add.text(W / 2 + 380, H / 2 - 150 + rij * 90, '●'.repeat(st.punten[i]) + '○'.repeat(Math.max(0, TP.WEDSTRIJD.rondesNodig - st.punten[i])), knopStijl(44, kleur)).setOrigin(1, 0.5).setDepth(6);
     });
     if (klaar >= 0) {
       this.time.delayedCall(1600, () => this.scene.start('Einde', this.opties));

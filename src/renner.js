@@ -18,7 +18,7 @@ TP.Renner = class {
     this.slidet = false; this.aanMuur = 0;
     this.sprongen = 0;
     this.haak = null;                      // {anker, lengte}
-    this.t = { coyote: 0, buffer: 0, vast: 0, verdoofd: 0, boost: 0, dash: 0, dashAfkoel: 0, kleef: 0, bevroren: 0, traag: 0, rakelings: 0, grip: 0, magneet: 0, muurLock: 0, schot: 0, landSquash: 0 };
+    this.t = { coyote: 0, buffer: 0, vast: 0, verdoofd: 0, boost: 0, dash: 0, dashAfkoel: 0, kleef: 0, bevroren: 0, traag: 0, rakelings: 0, grip: 0, magneet: 0, muurLock: 0, schot: 0, landSquash: 0, vuurWacht: 0 };
     this.boostFactor = 1;
     this.schild = false;
     this.item = opties.item || null;
@@ -61,8 +61,12 @@ TP.Renner = class {
     if (T.rakelings > 0) this.boostFactor = Math.max(this.boostFactor, F.rakelingsBonus);
 
     // item gebruiken
-    if (inp.item && this.item && !verdoofd) { this.scene.gebruikItem(this); }
-    if (inp.schiet && !verdoofd) this.scene.schiet(this);
+    // vuur ingedrukt terwijl je verdoofd of bevroren bent: onthouden en uitvoeren zodra het weer kan
+    let item = inp.item, schiet = inp.schiet;
+    if (verdoofd && (item || schiet)) { T.vuurWacht = 1; this.vuurMetItem = item; }
+    if (!verdoofd && T.vuurWacht > 0) { T.vuurWacht = 0; if (this.vuurMetItem) item = true; else schiet = true; }
+    if (item && this.item && !verdoofd) { this.scene.gebruikItem(this); }
+    if (schiet && !verdoofd) this.scene.schiet(this);
 
     if (this.haak) this.stapHaak(dt, inp);
     else if (this.opGrond) this.stapGrond(dt, inp, ix);
